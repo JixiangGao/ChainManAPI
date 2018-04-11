@@ -51,7 +51,7 @@ info = [
     }, {
         "coin_short_name": "BCN",
         "coin_full_name": "Bytecoin",
-        "repo_name": "amjuarez/bytecoin"
+        "repo_name": "bcndev/bytecoin"
     }, {
         "coin_short_name": "XVG",
         "coin_full_name": "Verge",
