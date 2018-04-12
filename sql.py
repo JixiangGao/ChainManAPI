@@ -69,15 +69,15 @@ class sql(object):
         else:
             period = 7
 
-        now_time = datetime.datetime.now()
-        yes_time = now_time + datetime.timedelta(days=(0-period))
-        str_yes = yes_time.strftime('%Y-%m-%d %H:%M:%S')
+        # now_time = datetime.datetime.now()
+        # yes_time = now_time + datetime.timedelta(days=(0-period))
+        # str_yes = yes_time.strftime('%Y-%m-%d %H:%M:%S')
 
         sql_cmt_num = \
             "select coin, count(*), sum(additions), sum(deletions), sum(total) \
             from repo_commits \
-            where 'commit_time' > '%s' \
-            group by coin " % str_yes
+            where TO_DAYS(now()) - TO_DAYS(commit_time) < %d \
+            group by coin " % period
 
         try:
             cursor = self.db.cursor()
