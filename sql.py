@@ -4,6 +4,7 @@ import config
 import pymysql
 import time
 import traceback
+import datetime
 
 
 class sql(object):
@@ -61,6 +62,43 @@ class sql(object):
         except BaseException as e:
             print(e)
             return {'code': '1010', 'msg': 'get coins error'}
+
+    def get_commits_num(self, params):
+        if 'period' in params:
+            period = int(params['period'])
+        else:
+            period = 7
+
+        now_time = datetime.datetime.now()
+        yes_time = now_time + datetime.timedelta(days=(0-period))
+        str_yes = yes_time.strftime('%Y-%m-%d %H:%M:%S')
+
+        sql_cmt_num = \
+            "select coin, count(*), sum(additions), sum(deletions), sum(total) \
+            from repo_commits \
+            where 'commit_time' > '%s' \
+            group by coin " % str_yes
+
+        try:
+            cursor = self.db.cursor()
+            cursor.execute(sql_cmt_num)
+            results = {}
+            for i in range(cursor.rowcount):
+                record = cursor.fetchone()
+
+                result = {}
+                result['commits_num'] = int(record[1])
+                result['additions'] = int(record[2])
+                result['deletions'] = int(record[3])
+                result['total'] = int(record[4])
+
+                results[record[0]] = result
+
+            cursor.close()
+            return results
+        except BaseException as e:
+            print(e)
+            return {'code': '1020', 'msg': 'get commits num error'}
 
 
 

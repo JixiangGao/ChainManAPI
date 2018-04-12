@@ -19,13 +19,21 @@ class GetInfo(object):
     def get_commits_info(self):
         for coin in self.coins_info:
 
+            #####
+            time_now = time.strftime('%Y-%m-%d %H:%M:%S',
+                                     time.localtime(time.time()))
+            print(time_now, coin["coin_full_name"])
+
             info = self.g.get_repo(coin["repo_name"])
             commits = info.get_commits()[:100]
             for commit in commits:
-                cmt_time_info = self.get_commit_time_info(commit)
-                result = self.insert_into_db(coin, commit, cmt_time_info)
+
+                result = self.is_existed(commit)
                 if not result:
-                    break
+                    continue
+                cmt_time_info = self.get_commit_time_info(commit)
+
+                self.insert_into_db(coin, commit, cmt_time_info)
 
     def get_commit_time_info(self, commit):
         url = commit.url
@@ -34,6 +42,23 @@ class GetInfo(object):
                 "client_secret": config.client_secret}
         commit_time_info = requests.get(url, params=data).json()
         return commit_time_info
+
+    def is_existed(self, commit):
+        sha = commit.sha
+        sql_is_existed = "select * from repo_commits \
+                    where commit_sha = '%s'" % (sha)
+        try:
+            cursor = self.db.cursor()
+            cursor.execute(sql_is_existed)
+            if cursor.rowcount != 0:
+                cursor.close()
+                return False
+            cursor.close()
+            return True
+
+        except BaseException as e:
+            print(e)
+            return True
 
     def insert_into_db(self, coin_info, commit, cmt_time_info):
         coin = coin_info['coin_full_name']
@@ -64,10 +89,7 @@ class GetInfo(object):
         sha = commit.sha
 
         ############
-        print(coin, commit_time)
-
-        sql_is_existed = "select * from repo_commits \
-            where commit_sha = '%s'" % (sha)
+        # print(coin, commit_time)
 
         sql_insert = "insert into repo_commits( \
             coin, repo_name, additions, deletions, total, \
@@ -80,20 +102,17 @@ class GetInfo(object):
 
         try:
             cursor = self.db.cursor()
-            cursor.execute(sql_is_existed)
-            if cursor.rowcount != 0:
-                cursor.close()
-                return False
-            print("insert successfully")
             cursor.execute(sql_insert)
             cursor.close()
             self.db.commit()
-            return True
+            ######
+            time_now = time.strftime('%Y-%m-%d %H:%M:%S',
+                                     time.localtime(time.time()))
+            print(time_now, coin, commit_time, "insert successfully")
 
         except BaseException as e:
             print(e)
             self.db.rollback()
-            return True
 
 while True:
     try:
@@ -101,7 +120,10 @@ while True:
     except BaseException as e:
         print(e)
     finally:
-        for i in range(3660):
-            print("ramain %dm %ds" %(i/60, i%60))
-            time.sleep(1)
+        for i in range(61):
+            ######
+            time_now = time.strftime('%Y-%m-%d %H:%M:%S',
+                                     time.localtime(time.time()))
+            print(time_now, "ramain %dm" % (61-i))
+            time.sleep(60)
 

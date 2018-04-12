@@ -15,6 +15,12 @@ def get_coins():
     return jsonify(result)
 
 
+@app.route('/get_commits_num')
+def get_commits_num():
+    result = mysql.get_commits_num(request.args)
+    return jsonify(result)
+
+
 if __name__ == '__main__':
     # app.run(debug=True)
     app.run(host='0.0.0.0', debug=True)
