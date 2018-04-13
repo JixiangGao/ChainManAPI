@@ -16,6 +16,7 @@ class GetInfo(object):
                                   config.mql_pswd,
                                   config.mql_db,
                                   charset="utf8")
+        print("start up!")
 
     def get_commits_info(self):
         for coin in self.coins_info:
@@ -26,14 +27,14 @@ class GetInfo(object):
             print(time_now, coin["coin_full_name"])
 
             info = self.g.get_repo(coin["repo_name"])
-            commits = info.get_commits()[:1000]
-            count = 0
+            commits = info.get_commits()
+            # count = 0
             for commit in commits:
-                count = count + 1
+                # count = count + 1
                 commit_time = commit.commit.committer.date
                 time_2018_1_1 = datetime.datetime.strptime(
                     '2018-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
-                if count > 1000 and commit_time < time_2018_1_1:
+                if commit_time < time_2018_1_1:
                     break
                 result = self.is_existed(commit)
                 if not result:
@@ -78,7 +79,7 @@ class GetInfo(object):
         commit_time = commit_time + datetime.timedelta(hours=8)
         commit_time = datetime.datetime.strftime(commit_time, '%Y-%m-%d %H:%M:%S')
 
-        html_url = commit.commit.url
+        html_url = commit.html_url
         sha = commit.sha
 
         ############
@@ -93,6 +94,15 @@ class GetInfo(object):
             int(total), collect_time, author, committer,
             create_time, str(commit_time), html_url, sha)
 
+        sql_insert_except = "insert into repo_commits( \
+            coin, repo_name, additions, deletions, total, \
+            collect_time, create_time, \
+            commit_time, , commit_sha) values ( \
+            '%s', '%s', %d, %d, %d, '%s', '%s', '%s', '%s')" % (
+            coin, repo_name, int(additions), int(deletions),
+            int(total), collect_time,
+            create_time, str(commit_time), sha)
+
         try:
             cursor = self.db.cursor()
             cursor.execute(sql_insert)
@@ -105,6 +115,18 @@ class GetInfo(object):
 
         except BaseException as e:
             print(e)
+            # try:
+            #     cursor = self.db.cursor()
+            #     cursor.execute(sql_insert_except)
+            #     cursor.close()
+            #     self.db.commit()
+            #     ######
+            #     time_now = time.strftime('%Y-%m-%d %H:%M:%S',
+            #                              time.localtime(time.time()))
+            #     print(time_now, coin, commit_time, "something wrong but insert successfully")
+            # except BaseException as ee:
+            #     print(ee)
+            #     self.db.rollback()
             # traceback.print_exc()
             self.db.rollback()
 
@@ -116,10 +138,11 @@ while True:
         print(e)
         traceback.print_exc()
     finally:
-        for i in range(61):
+        # time.sleep(5)
+        for i in range(5):
             ######
             time_now = time.strftime('%Y-%m-%d %H:%M:%S',
                                      time.localtime(time.time()))
-            print(time_now, "ramain %dm" % (61 - i))
+            print(time_now, "ramain %dm" % (5 - i))
             time.sleep(60)
 

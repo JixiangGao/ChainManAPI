@@ -21,6 +21,12 @@ def get_commits_num():
     return jsonify(result)
 
 
+@app.route('/get_last')
+def get_last():
+    result = mysql.get_last(request.args)
+    return jsonify(result)
+
+
 if __name__ == '__main__':
     # app.run(debug=True)
     app.run(host='0.0.0.0', debug=True)
