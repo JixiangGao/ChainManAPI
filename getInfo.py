@@ -4,6 +4,7 @@ import requests
 import pymysql
 import time
 import datetime
+import traceback
 
 
 class GetInfo(object):
@@ -25,23 +26,20 @@ class GetInfo(object):
             print(time_now, coin["coin_full_name"])
 
             info = self.g.get_repo(coin["repo_name"])
-            commits = info.get_commits()[:100]
+            commits = info.get_commits()[:1000]
+            count = 0
             for commit in commits:
-
+                count = count + 1
+                commit_time = commit.commit.committer.date
+                time_2018_1_1 = datetime.datetime.strptime(
+                    '2018-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
+                if count > 1000 and commit_time < time_2018_1_1:
+                    break
                 result = self.is_existed(commit)
                 if not result:
                     continue
-                cmt_time_info = self.get_commit_time_info(commit)
 
-                self.insert_into_db(coin, commit, cmt_time_info)
-
-    def get_commit_time_info(self, commit):
-        url = commit.url
-        url = url.replace("/commits/", "/git/commits/")
-        data = {"client_id": config.client_id,
-                "client_secret": config.client_secret}
-        commit_time_info = requests.get(url, params=data).json()
-        return commit_time_info
+                self.insert_into_db(coin, commit)
 
     def is_existed(self, commit):
         sha = commit.sha
@@ -58,34 +56,29 @@ class GetInfo(object):
 
         except BaseException as e:
             print(e)
+            # traceback.print_exc()
             return True
 
-    def insert_into_db(self, coin_info, commit, cmt_time_info):
+    def insert_into_db(self, coin_info, commit):
         coin = coin_info['coin_full_name']
         repo_name = coin_info['repo_name']
         additions = commit.stats.additions
         deletions = commit.stats.deletions
         total = commit.stats.total
         collect_time = str(time.strftime('%Y-%m-%d %H:%M:%S',
-                                 time.localtime(time.time())))
-        author = cmt_time_info['author']['name']
-        committer = cmt_time_info['committer']['name']
+                                         time.localtime(time.time())))
+        author = commit.commit.author.name
+        committer = commit.commit.committer.name
 
-        create_time = cmt_time_info['author']['date']
-        create_time = create_time.replace('T', ' ')
-        create_time = create_time.replace('Z', '')
-        create_time = datetime.datetime.strptime(create_time, '%Y-%m-%d %H:%M:%S')
+        create_time = commit.commit.author.date
         create_time = create_time + datetime.timedelta(hours=8)
         create_time = datetime.datetime.strftime(create_time, '%Y-%m-%d %H:%M:%S')
 
-        commit_time = cmt_time_info['committer']['date']
-        commit_time = commit_time.replace('T', ' ')
-        commit_time = commit_time.replace('Z', '')
-        commit_time = datetime.datetime.strptime(commit_time, '%Y-%m-%d %H:%M:%S')
+        commit_time = commit.commit.committer.date
         commit_time = commit_time + datetime.timedelta(hours=8)
         commit_time = datetime.datetime.strftime(commit_time, '%Y-%m-%d %H:%M:%S')
 
-        html_url = cmt_time_info['html_url']
+        html_url = commit.commit.url
         sha = commit.sha
 
         ############
@@ -112,18 +105,21 @@ class GetInfo(object):
 
         except BaseException as e:
             print(e)
+            # traceback.print_exc()
             self.db.rollback()
+
 
 while True:
     try:
         GetInfo().get_commits_info()
     except BaseException as e:
         print(e)
+        traceback.print_exc()
     finally:
         for i in range(61):
             ######
             time_now = time.strftime('%Y-%m-%d %H:%M:%S',
                                      time.localtime(time.time()))
-            print(time_now, "ramain %dm" % (61-i))
+            print(time_now, "ramain %dm" % (61 - i))
             time.sleep(60)
 
