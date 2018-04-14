@@ -27,6 +27,12 @@ def get_last():
     return jsonify(result)
 
 
+@app.route('/get_rank')
+def get_rank():
+    result = mysql.get_rank(request.args)
+    return jsonify(result)
+
+
 if __name__ == '__main__':
     # app.run(debug=True)
     app.run(host='0.0.0.0', debug=True)

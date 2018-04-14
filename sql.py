@@ -119,8 +119,7 @@ class sql(object):
             if period == 'week':
                 sql_where_condition = "YEARWEEK(date_format(commit_time,'%%Y-%%m-%%d')) = YEARWEEK(now())- %d" % i
             elif period == 'month':
-                sql_where_condition = "date_format(commit_time, '%%Y %%m') = \
-                    date_format(DATE_SUB(curdate(), INTERVAL %d MONTH),'%%Y %%m')" % i
+                sql_where_condition = "date_format(commit_time, '%%Y %%m') = date_format(DATE_SUB(curdate(), INTERVAL %d MONTH),'%%Y %%m')" % i
             elif period == 'day':
                 sql_where_condition = "TO_DAYS( NOW( ) ) - TO_DAYS( commit_time) = %d" % i
             if 'coin' in params:
@@ -139,7 +138,6 @@ class sql(object):
             try:
                 cursor = self.db.cursor()
                 cursor.execute(sql_get_last)
-                # print(cursor.rowcount)
                 for j in range(cursor.rowcount):
                     record = cursor.fetchone()
 
@@ -160,7 +158,7 @@ class sql(object):
                     elif period == 'day':
                         commit_time = record[5].strftime("%Y-%m-%d")
                         result['day'] = commit_time
-                    if record[0] in result_dict:
+                    if result_dict.has_key(record[0]):
                         result_dict[record[0]].append(result)
                     else:
                         result_dict[record[0]] = []
@@ -171,7 +169,78 @@ class sql(object):
                 print(e)
                 traceback.print_exc()
                 return {'code': '1030', 'msg': 'get last error'}
+
         return result_dict
+
+    def get_rank(self, params):
+        # wait to adj
+        rank1_rate = 0.05
+        rank2_rate = 0.1
+        rank3_rate = 0.4
+        rank4_rate = 0.35
+        rank5_rate = 0.1
+
+        sql_get_rank = \
+            "select coin, count(*), sum(additions), sum(deletions), sum(total) \
+            from repo_commits \
+            where YEARWEEK(date_format(commit_time,'%Y-%m-%d')) = YEARWEEK(now())- 1 \
+            group by coin "
+
+        if 'period' in params:
+            if params['period'] == 'month':
+                sql_get_rank = \
+                    "select coin, count(*), sum(additions), sum(deletions), sum(total) \
+                    from repo_commits \
+                    where date_format(commit_time, '%%Y %%m') = date_format(DATE_SUB(curdate(), INTERVAL 1 MONTH),'%%Y %%m') \
+                    group by coin "
+
+        try:
+            cursor = self.db.cursor()
+            cursor.execute(sql_get_rank)
+            coins_dict = {}
+            for i in range(cursor.rowcount):
+                record = cursor.fetchone()
+
+                result = {}
+                result['commits_num'] = int(record[1])
+                result['additions'] = int(record[2])
+                result['deletions'] = int(record[3])
+                result['total'] = int(record[4])
+
+                coins_dict[record[0]] = result
+
+            cursor.close()
+        except BaseException as e:
+            print(e)
+            return {'code': '1040', 'msg': 'get rank error'}
+
+        return_dict = {}
+        coin_total_dict = {}
+        coins_list = coins_dict.keys()
+        coins_num = len(coins_list)
+
+        rank1_num = rank1_rate * coins_num
+        rank12_num = (rank1_rate + rank2_rate) * coins_num
+        rank123_num = (rank1_rate + rank2_rate + rank3_rate) * coins_num
+        rank1234_num = (1 - rank5_rate) * coins_num
+
+        for coinName in coins_list:
+            return_dict[coinName] = 1
+            coin_total_dict[coinName] = coins_dict[coinName]['commits_num']  # 这里也可以改成是commit数，或total数
+
+        coin_total_list = list(coin_total_dict.items())
+        coin_total_list.sort(key=lambda x: x[1])
+        for i in range(int(rank1234_num)):
+            return_dict[coin_total_list[i][0]] += 1
+        for i in range(int(rank123_num)):
+            return_dict[coin_total_list[i][0]] += 1
+        for i in range(int(rank12_num)):
+            return_dict[coin_total_list[i][0]] += 1
+        for i in range(int(rank1_num)):
+            return_dict[coin_total_list[i][0]] += 1
+
+        return return_dict
+
 
 
 
