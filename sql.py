@@ -15,6 +15,9 @@ class sql(object):
                                   config.mql_db,
                                   charset="utf8")
 
+    def db_close(self):
+        self.db.close()
+
     def get_coins(self, params):
         commit_num = 10
         if 'commit_num' in params:
@@ -158,7 +161,7 @@ class sql(object):
                     elif period == 'day':
                         commit_time = record[5].strftime("%Y-%m-%d")
                         result['day'] = commit_time
-                    if result_dict.has_key(record[0]):
+                    if record[0] in result_dict:
                         result_dict[record[0]].append(result)
                     else:
                         result_dict[record[0]] = []
