@@ -39,6 +39,14 @@ def get_rank():
     return jsonify(result)
 
 
+@app.route('/get_frequency')
+def get_frequency():
+    mysql = sql.sql()
+    result = mysql.get_frequency(request.args)
+    mysql.db_close()
+    return jsonify(result)
+
+
 if __name__ == '__main__':
     # app.run(debug=True)
     app.run(host='0.0.0.0', debug=True)

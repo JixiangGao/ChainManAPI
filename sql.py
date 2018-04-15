@@ -244,8 +244,84 @@ class sql(object):
 
         return return_dict
 
+    def get_frequency(self, params):
+        coin = params['coin']
 
+        index_results = []
+        value_results = []
 
+        now = datetime.datetime.now()
 
+        # days
+        my_params = {'coin': coin, 'period': 'day'}
+        day_return = self.get_last(my_params)
+        index_result_day = []
+        value_result_day = [0, 0, 0, 0, 0, 0, 0]
+        for i in range(1, 8):
+            day = now + datetime.timedelta(days=-i)
+            day = datetime.datetime.strftime(day, "%Y-%m-%d")
+            index_result_day.append(day)
+        j = 0
+        # print (list(day_return.values()))
+        if len(list(day_return.values())) == 0:
+            minn = 0
+        else:
+            minn = min(len(list(day_return.values())[0]), 7)
+        for i in range(minn):
+            key = list(day_return.keys())[0]
+            if day_return[key][j]['day'] == index_result_day[i]:
+                value_result_day[i] = day_return[key][j]['total']
+                j += 1
+        index_results.append(index_result_day)
+        value_results.append(value_result_day)
 
+        # weeks
+        my_params = {'coin': coin, 'period': 'week'}
+        day_return = self.get_last(my_params)
+        index_result_day = []
+        value_result_day = [0, 0, 0, 0]
+        '''
+            something wrong here
+        '''
+        for i in range(4):
+            week = int(datetime.datetime.strftime(now, "%W")) - i
+            index_result_day.append(week)
+        j = 0
+        if len(list(day_return.values())) == 0:
+            minn = 0
+        else:
+            minn = min(len(list(day_return.values())[0]), 4)
+        for i in range(minn):
+            key = list(day_return.keys())[0]
+            if day_return[key][j]['week'] == index_result_day[i]:
+                value_result_day[i] = day_return[key][j]['total']
+                j += 1
+        index_results.append(index_result_day)
+        value_results.append(value_result_day)
 
+        # months
+        my_params = {'coin': coin, 'period': 'month'}
+        day_return = self.get_last(my_params)
+        index_result_day = []
+        value_result_day = [0, 0, 0, 0, 0, 0]
+        month = datetime.datetime.now()
+        for i in range(1, 7):
+            month = datetime.date(month.year, month.month, 1)
+            month = month + datetime.timedelta(days=-1)
+            month_tmp = datetime.datetime.strftime(month, "%Y-%m")
+            index_result_day.append(month_tmp)
+        j = 0
+        if len(list(day_return.values())) == 0:
+            minn = 0
+        else:
+            minn = min(len(list(day_return.values())[0]), 6)
+        for i in range(minn):
+            key = list(day_return.keys())[0]
+            if day_return[key][j]['month'] == index_result_day[i]:
+                value_result_day[i] = day_return[key][j]['total']
+                j += 1
+        index_results.append(index_result_day)
+        value_results.append(value_result_day)
+
+        result = [index_results, value_results]
+        return result
