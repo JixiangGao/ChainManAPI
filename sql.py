@@ -104,10 +104,11 @@ class sql(object):
             return {'code': '1020', 'msg': 'get commits num error'}
 
     def get_last(self, params):
-        sql_get_last = ""
-        sql_where_condition = ""
+        sql_get_last = ""      #完整的sql语句
+        sql_where_condition = ""      #sql语句中where子句
+        sql_dateformat = ""      #select语句中date部分
         result_dict = {}
-        loop_times = 20
+        loop_times = 20      #week的looptime
         period = ""
         if 'period' in params:
             period = str(params['period'])
@@ -121,46 +122,50 @@ class sql(object):
         for i in range(1, loop_times + 1):
             if period == 'week':
                 sql_where_condition = "YEARWEEK(date_format(commit_time,'%%Y-%%m-%%d')) = YEARWEEK(now())- %d" % i
+                sql_dateformat = "WEEK(date_format(max(commit_time),'%Y-%m-%d'))"
             elif period == 'month':
                 sql_where_condition = "date_format(commit_time, '%%Y %%m') = date_format(DATE_SUB(curdate(), INTERVAL %d MONTH),'%%Y %%m')" % i
+                sql_dateformat = "date_format(max(commit_time), '%Y-%m')"
             elif period == 'day':
                 sql_where_condition = "TO_DAYS( NOW( ) ) - TO_DAYS( commit_time) = %d" % i
+                sql_dateformat = "date_format(max(commit_time), '%Y-%m-%d')"  #待验证
+                
             if 'coin' in params:
                 coin = params['coin']
                 sql_get_last = \
-                    "select coin, count(*), sum(additions), sum(deletions), sum(total),  max(commit_time)\
+                    "select coin, count(*), sum(additions), sum(deletions), sum(total),  %s\
                     from repo_commits \
                     WHERE %s \
-                    AND coin = '%s'" % (sql_where_condition, coin)
+                    AND coin = '%s'" % (sql_dateformat, sql_where_condition, coin)
             else:
                 sql_get_last = \
-                    "select coin, count(*), sum(additions), sum(deletions), sum(total), max(commit_time) \
+                    "select coin, count(*), sum(additions), sum(deletions), sum(total), %s \
                     from repo_commits \
                     WHERE %s \
-                    group by coin " % sql_where_condition
+                    group by coin " % (sql_dateformat, sql_where_condition)
             try:
                 cursor = self.db.cursor()
                 cursor.execute(sql_get_last)
                 for j in range(cursor.rowcount):
                     record = cursor.fetchone()
 
-                    result = {}
+                    result = {}     #result是单个period内，单个币种的字典
 
-                    if not record[0]:
+                    if not record[0]: #若没有查询结果会返回一行NULL，这里做一个安全检查
                         break
                     result['commits_num'] = int(record[1])
                     result['additions'] = int(record[2])
                     result['deletions'] = int(record[3])
                     result['total'] = int(record[4])
+                    
                     if period == 'week':
-                        commit_time = record[5].isocalendar()[1]
-                        result['week'] = commit_time
+                        week_num = int(record[5])
+                        week_num += 1
+                        result['week'] = week_num
                     elif period == 'month':
-                        commit_time = record[5].strftime("%Y-%m")
-                        result['month'] = commit_time
+                        result['month'] = record[5]
                     elif period == 'day':
-                        commit_time = record[5].strftime("%Y-%m-%d")
-                        result['day'] = commit_time
+                        result['day'] = record[5]
                     if record[0] in result_dict:
                         result_dict[record[0]].append(result)
                     else:
@@ -170,7 +175,7 @@ class sql(object):
                 cursor.close()
             except BaseException as e:
                 print(e)
-                traceback.print_exc()
+                #traceback.print_exc()
                 return {'code': '1030', 'msg': 'get last error'}
 
         return result_dict
