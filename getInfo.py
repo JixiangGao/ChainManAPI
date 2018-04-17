@@ -33,7 +33,7 @@ class GetInfo(object):
                 # count = count + 1
                 commit_time = commit.commit.committer.date
                 time_2018_1_1 = datetime.datetime.strptime(
-                    '2018-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
+                    '2018-03-01 00:00:00', '%Y-%m-%d %H:%M:%S')
                 if commit_time < time_2018_1_1:
                     break
                 result = self.is_existed(commit)
@@ -139,10 +139,10 @@ while True:
         traceback.print_exc()
     finally:
         # time.sleep(5)
-        for i in range(5):
+        for i in range(30):
             ######
             time_now = time.strftime('%Y-%m-%d %H:%M:%S',
                                      time.localtime(time.time()))
-            print(time_now, "ramain %dm" % (5 - i))
+            print(time_now, "ramain %dm" % (30 - i))
             time.sleep(60)
 

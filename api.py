@@ -47,6 +47,14 @@ def get_frequency():
     return jsonify(result)
 
 
+@app.route('/login')
+def login():
+    mysql = sql.sql()
+    result = mysql.login(request.args)
+    mysql.db_close()
+    return jsonify(result)
+
+
 if __name__ == '__main__':
     # app.run(debug=True)
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', debug=True, ssl_context='adhoc')

@@ -5,6 +5,7 @@ import pymysql
 import time
 import traceback
 import datetime
+import requests
 
 
 class sql(object):
@@ -104,11 +105,11 @@ class sql(object):
             return {'code': '1020', 'msg': 'get commits num error'}
 
     def get_last(self, params):
-        sql_get_last = ""      #完整的sql语句
-        sql_where_condition = ""      #sql语句中where子句
-        sql_dateformat = ""      #select语句中date部分
+        sql_get_last = ""  # 完整的sql语句
+        sql_where_condition = ""  # sql语句中where子句
+        sql_dateformat = ""  # select语句中date部分
         result_dict = {}
-        loop_times = 20      #week的looptime
+        loop_times = 20  # week的looptime
         period = ""
         if 'period' in params:
             period = str(params['period'])
@@ -128,8 +129,8 @@ class sql(object):
                 sql_dateformat = "date_format(max(commit_time), '%Y-%m')"
             elif period == 'day':
                 sql_where_condition = "TO_DAYS( NOW( ) ) - TO_DAYS( commit_time) = %d" % i
-                sql_dateformat = "date_format(max(commit_time), '%Y-%m-%d')"  #待验证
-                
+                sql_dateformat = "date_format(max(commit_time), '%Y-%m-%d')"  # 待验证
+
             if 'coin' in params:
                 coin = params['coin']
                 sql_get_last = \
@@ -149,15 +150,15 @@ class sql(object):
                 for j in range(cursor.rowcount):
                     record = cursor.fetchone()
 
-                    result = {}     #result是单个period内，单个币种的字典
+                    result = {}  # result是单个period内，单个币种的字典
 
-                    if not record[0]: #若没有查询结果会返回一行NULL，这里做一个安全检查
+                    if not record[0]:  # 若没有查询结果会返回一行NULL，这里做一个安全检查
                         break
                     result['commits_num'] = int(record[1])
                     result['additions'] = int(record[2])
                     result['deletions'] = int(record[3])
                     result['total'] = int(record[4])
-                    
+
                     if period == 'week':
                         week_num = int(record[5])
                         week_num += 1
@@ -175,7 +176,7 @@ class sql(object):
                 cursor.close()
             except BaseException as e:
                 print(e)
-                #traceback.print_exc()
+                # traceback.print_exc()
                 return {'code': '1030', 'msg': 'get last error'}
 
         return result_dict
@@ -330,3 +331,22 @@ class sql(object):
 
         result = [index_results, value_results]
         return result
+
+    def login(self, params):
+        if 'code' not in params:
+            return {}
+
+        code = params['code']
+        url = "https://api.weixin.qq.com/sns/jscode2session?appid=" + \
+              config.appid + "&secret=" + config.secret + \
+              "&js_code=" + code + "&grant_type=authorization_code"
+        # print(url)
+        # print(code)
+        # result = {}
+        result = requests.get(url=url).json()
+        # print(result)
+        if 'openid' in result:
+            openid = result['openid']
+            return {'openid': openid}
+        else:
+            return result
