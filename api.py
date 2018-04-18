@@ -80,6 +80,14 @@ def delete_personal_coin():
     return jsonify(result)
 
 
+@app.route('/get_coins_list')
+def get_coins_list():
+    mysql = sql.sql()
+    result = mysql.get_coins_list(request.args)
+    mysql.db_close()
+    return jsonify(result)
+
+
 if __name__ == '__main__':
     # app.run(debug=True)
     app.run(host='0.0.0.0', debug=True, ssl_context=(

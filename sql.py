@@ -268,9 +268,6 @@ class sql(object):
             day_return = day_return['data']
         else:
             return {"code": 2019, "success": False, "message": "api执行错误", "data": None}
-
-        print(day_return)
-
         index_result_day = []
         value_result_day = [0, 0, 0, 0, 0, 0, 0]
         for i in range(1, 8):
@@ -452,3 +449,31 @@ class sql(object):
             print(e)
             return {"code": "2017", "success": False, "message": "从数据库删除元组时出错", "data": params['coin']}
         return {"code": "1000", "success": True, "message": "删除成功", "data": params['coin']}
+
+    def get_coins_list(self, params):
+        if 'period' not in params:
+            return {"code": "2022", "success": False, "message": "参数错误", "data": None}
+        period = params['period']
+        rank_result = self.get_rank({'period': period})
+        if rank_result['code'] == 1000:
+            data = rank_result['data']
+        else:
+            return rank_result
+        coins_list = []
+        for coin in config.info:
+            element = {}
+            coin_full_name = coin['coin_full_name']
+            coin_short_name = coin['coin_short_name']
+            low_short_name = coin_short_name.lower()
+            element['a'] = 'https://www.banbaofruit.com/images/' \
+                + low_short_name + '.png'
+            element['b'] = coin_short_name
+            if coin_full_name in data:
+                element['c'] = data[coin_full_name]
+            else:
+                element['c'] = -1
+            element['d'] = 1
+            coins_list.append(element)
+        return {"code": "1000", "success": True, "message": "获取成功", "data": coins_list}
+
+
