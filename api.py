@@ -1,4 +1,5 @@
-#!flask/bin/python
+# -*- coding: utf-8 -*-
+# !flask/bin/python
 from flask import Flask, jsonify
 from flask import request
 import sql
@@ -51,6 +52,30 @@ def get_frequency():
 def login():
     mysql = sql.sql()
     result = mysql.login(request.args)
+    mysql.db_close()
+    return jsonify(result)
+
+
+@app.route('/get_personal_coins')
+def get_personal_coins():
+    mysql = sql.sql()
+    result = mysql.get_personal_coins(request.args)
+    mysql.db_close()
+    return jsonify(result)
+
+
+@app.route('/insert_personal_coin')
+def insert_personal_coin():
+    mysql = sql.sql()
+    result = mysql.insert_personal_coin(request.args)
+    mysql.db_close()
+    return jsonify(result)
+
+
+@app.route('/delete_personal_coin')
+def delete_personal_coin():
+    mysql = sql.sql()
+    result = mysql.delete_personal_coin(request.args)
     mysql.db_close()
     return jsonify(result)
 

@@ -1,0 +1,345 @@
+# ChainManAPI  
+  
+/get_coins  
+	获取所有币种代码更新信息  
+	params: commit_num (可选, 默认10)  
+	return: 
+			错误  	{
+					  "code": "2001", 
+					  "data": null, 
+					  "message": "get coins error", 
+					  "success": false
+					}  
+			成功  	{
+						"code": "1000", 
+						"message": "get coins successfully", 
+						"success": true,
+						"data": {
+							"BitShares": [
+							  {
+								"additions": 3771, 
+								"author": "Abit", 
+								"coin": "BitShares", 
+								"collect_time": "Wed, 11 Apr 2018 01:24:26 GMT", 
+								"commit_sha": "92eb45cbd3e61c163561b0e6cf7fc99c633e4fcf", 
+								"commit_time": "Thu, 29 Mar 2018 03:07:53 GMT", 
+								"committer": "GitHub", 
+								"content": null, 
+								"create_time": "Thu, 29 Mar 2018 03:07:53 GMT", 
+								"deletions": 1074, 
+								"html_url": "https://github.com/bitshares/bitshares-core/commit/92eb45cbd3e61c163561b0e6cf7fc99c633e4fcf", 
+								"repo_name": "bitshares/bitshares-core", 
+								"total": 4845
+							  }, 
+							  {
+								……
+							  },
+							  ……
+							]
+						}
+					}
+			
+/get_commits_num  
+	获取所有币种代码更新数目  
+	params: period (天数, 可选, 默认为7)  
+	return: 错误	{
+						"code": "2002", 
+						"success": False, 
+						"message": "get commits num error", 
+						"data": None
+					}  
+			成功	{
+						"code": "1000", 
+						"message": "get commits num successfully", 
+						"success": true,
+						"data": {
+							"Bitcoin": {
+								"additions": 1397, 
+								"commits_num": 50, 
+								"deletions": 783, 
+								"total": 2180
+							}, 
+							"Bitcoin Cash": {
+								……
+							}, 
+							……
+						}
+					}
+						
+
+/get_last
+	获取一个特定币种或全部币种在过去几个时段内，每个时段的更新数目，“时段”的单位是天，周或月
+	params: period (枚举类型，为'day','week','month'中的一个，默认为week)
+			coin (币种的全名，如‘Bitcoin’，‘Bitshares’)
+	return：错误	{
+						"code": "2003", 
+						"success": False, 
+						"message": "从repo_commits获取数据时出错", 
+						"data": None
+					} 
+			成功 	{
+						"code": "1000", 
+						"message": "get_last成功", 
+						"success": true,
+						"data": {
+							"BitShares": [
+								{
+									"additions": 7731, #增加代码量
+									"commits_num": 13, #提交次数
+									"deletions": 1965, #删减代码量
+									"total": 9696, 	 #代码改动总量  
+									"date": 201813	 #今年的第X周， 如果period传入month，则形如: "2018 03"；如果是day，为: "2018 03 29"
+								}, 
+								{
+									...
+								}, 
+								...
+							], 
+							"Bitcoin": [
+									...
+							]
+							...
+						}
+
+/get_rank
+	获得上周或上月币种的评级，从1-5，为频率从低到高
+	params: period (枚举类型，为'week','month'中的一个，默认为week)
+	return：错误	{
+						"code": "2004", 
+						"success": False, 
+						"message": "参数错误", 
+						"data": None
+					}
+					{
+						"code": "2005", 
+						"success": False, 
+						"message": "从repo_commits获取数据时出错", 
+						"data": None
+					}
+			成功 	{
+						"code": "1000", 
+						"message": "get_last成功", 
+						"success": true,
+						"data": {
+								  "BitShares": 3, 
+								  "Bitcoin": 2, 
+								  "Bitcoin Cash": 5, 
+								  "Bitcoin Gold": 3, 
+								  "Bytecoin": 4, 
+								  "Cardano": 1, 
+								  ......
+								}
+					}
+
+/get_personal_coins
+	获取一名用户的自选币列表
+	params: user_id
+	return: 错误	{
+						"code": "2006", 
+						"success": False, 
+						"message": "参数错误", 
+						"data": None
+					}
+					{
+						"code": "2007", 
+						"success": False, 
+						"message": "从数据库获取自选币表时出错", 
+						"data": None
+					}
+					{
+						"code": "2008", 
+						"success": False, 
+						"message": "该用户还没有自选的币", 
+						"data": None
+					}
+			成功	{
+						"code": "1000", 
+						"success": True, 
+						"message": "成功获取自选币信息", 
+						"data": [
+									"BitShares"
+									"Bitcoin" 
+									"Bitcoin Cash" 
+									"Bitcoin Gold" 
+									"Bytecoin" 
+									"Cardano" 
+									......
+								]
+					}
+					
+/insert_personal_coin
+	向person_coins表插入一个coin，如果已存在该coin则报错返回
+	params：user_id 
+			coin (待插入的币名称)
+	return: 错误	{
+						"code": "2009", 
+						"success": False, 
+						"message": "参数错误", 
+						"data": None
+					}
+					{
+						"code": "2010", 
+						"success": False, 
+						"message": "该币已经在数据库了", 
+						"data": None
+					}
+					{
+						"code": "2011", 
+						"success": False, 
+						"message": "从数据库获取自选币表时出错", 
+						"data": None
+					}
+					{
+						"code": "2012", 
+						"success": False, 
+						"message": "向数据库插入元组时出错", 
+						"data": None
+					}
+			成功	{
+						"code": "1000", 
+						"success": True, 
+						"message": "插入成功", 
+						"data": "Bitcoin"
+					}
+					
+/delete_personal_coin
+	向person_coins表删除一个coin，如果不存在该coin则报错返回
+	params：user_id 
+			coin (待删除的币名称)
+	return: 错误	{
+						"code": "2013", 
+						"success": False, 
+						"message": "参数错误", 
+						"data": None
+					}
+					{
+						"code": "2014", 
+						"success": False, 
+						"message": "数据库没有此项", 
+						"data": None
+					}
+					{
+						"code": "2015", 
+						"success": False, 
+						"message": "查找到值为null", 
+						"data": None
+					}
+					{
+						"code": "2016", 
+						"success": False, 
+						"message": "从数据库获取自选币表时出错", 
+						"data": None
+					}
+					{
+						"code": "2017", 
+						"success": False, 
+						"message": "从数据库删除元组时出错", 
+						"data": None
+			成功	{
+						"code": "1000", 
+						"success": True, 
+						"message": "删除成功", 
+						"data": "Bitcoin"
+					}
+					
+/get_frequency
+	获取币种更新频率
+	params：coin
+	return: 错误	{
+						"code": "2018", 
+						"data": null, 
+						"message": "参数错误", 
+						"success": false
+					}
+					{
+						"code": "2019", 
+						"data": null, 
+						"message": "api执行错误", 
+						"success": false
+					}
+			成功	{
+					  "code": 1000, 
+					  "message": "get frequency successfully", 
+					  "success": true,
+					  "data": [
+						[
+						  [
+							"2018-04-17", 
+							"2018-04-16", 
+							"2018-04-15", 
+							"2018-04-14", 
+							"2018-04-13", 
+							"2018-04-12", 
+							"2018-04-11"
+						  ], 
+						  [
+							15, 
+							14, 
+							13, 
+							12
+						  ], 
+						  [
+							"2018-03", 
+							"2018-02", 
+							"2018-01", 
+							"2017-12", 
+							"2017-11", 
+							"2017-10"
+						  ]
+						], 
+						[
+						  [
+							4089, 
+							1270, 
+							542, 
+							895, 
+							2919, 
+							700, 
+							541
+						  ], 
+						  [
+							9595, 
+							3648857, 
+							201895, 
+							310964
+						  ], 
+						  [
+							699098, 
+							6530409, 
+							1881210, 
+							679922, 
+							146580, 
+							185144
+						  ]
+						]
+					  ]
+					}
+
+
+
+/login
+	登录
+	params：code
+	return：错误	{
+						"code": "2020", 
+						"data": null, 
+						"message": "参数错误", 
+						"success": false
+					}
+					{
+						"code": "2021", 
+						"message": "获取openid错误", 
+						"success": false,
+						"data": {
+							"errcode": 40029, 
+							"errmsg": "invalid code, hints: [ req_id: HPSLMa0548th56 ]"
+						}
+					}
+					
+			成功	{
+						"code": 1000, 
+						"success": True, 
+						"message": "login successfully", 
+						"data": {'openid': openid}
+					}
+			

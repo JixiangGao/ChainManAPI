@@ -62,10 +62,10 @@ class sql(object):
                 all_results[coin] = coin_results
 
             cursor.close()
-            return all_results
+            return {"code": 1000, "success": True, "message": "get coins successfully", "data": all_results}
         except BaseException as e:
             print(e)
-            return {'code': '1010', 'msg': 'get coins error'}
+            return {"code": 2001, "success": False, "message": "get coins error", "data": None}
 
     def get_commits_num(self, params):
         if 'period' in params:
@@ -99,17 +99,17 @@ class sql(object):
                 results[record[0]] = result
 
             cursor.close()
-            return results
+            return {"code": 1000, "success": True, "message": "get commits num successfully", "data": results}
         except BaseException as e:
             print(e)
-            return {'code': '1020', 'msg': 'get commits num error'}
+            return {"code": 2002, "success": False, "message": "get commits num error", "data": None}
 
     def get_last(self, params):
         sql_get_last = ""  # 完整的sql语句
         sql_where_condition = ""  # sql语句中where子句
         sql_dateformat = ""  # select语句中date部分
         result_dict = {}
-        loop_times = 20  # week的looptime
+        loop_times = 8  # week的looptime
         period = ""
         if 'period' in params:
             period = str(params['period'])
@@ -176,10 +176,8 @@ class sql(object):
                 cursor.close()
             except BaseException as e:
                 print(e)
-                # traceback.print_exc()
-                return {'code': '1030', 'msg': 'get last error'}
-
-        return result_dict
+                return {"code": 2003, "success": False, "message": "从repo_commits获取数据时出错", "data": None}
+        return {"code": 1000, "success": True, "message": "get_last成功", "data": result_dict}
 
     def get_rank(self, params):
         # wait to adj
@@ -202,6 +200,8 @@ class sql(object):
                     from repo_commits \
                     where date_format(commit_time, '%%Y %%m') = date_format(DATE_SUB(curdate(), INTERVAL 1 MONTH),'%%Y %%m') \
                     group by coin "
+            elif not params['period'] == 'week':
+                return {"code": 2004, "success": False, "message": "参数错误", "data": None}
 
         try:
             cursor = self.db.cursor()
@@ -221,7 +221,7 @@ class sql(object):
             cursor.close()
         except BaseException as e:
             print(e)
-            return {'code': '1040', 'msg': 'get rank error'}
+            return {"code": 2005, "success": False, "message": "从repo_commits获取数据时出错", "data": None}
 
         return_dict = {}
         coin_total_dict = {}
@@ -248,9 +248,12 @@ class sql(object):
         for i in range(int(rank1_num)):
             return_dict[coin_total_list[i][0]] += 1
 
-        return return_dict
+        return {"code": 1000, "success": True, "message": "get rank成功", "data": return_dict}
 
     def get_frequency(self, params):
+        if 'coin' not in params:
+            return {"code": 2018, "success": False, "message": "参数错误", "data": None}
+
         coin = params['coin']
 
         index_results = []
@@ -261,6 +264,13 @@ class sql(object):
         # days
         my_params = {'coin': coin, 'period': 'day'}
         day_return = self.get_last(my_params)
+        if day_return['code'] == 1000:
+            day_return = day_return['data']
+        else:
+            return {"code": 2019, "success": False, "message": "api执行错误", "data": None}
+
+        print(day_return)
+
         index_result_day = []
         value_result_day = [0, 0, 0, 0, 0, 0, 0]
         for i in range(1, 8):
@@ -268,7 +278,6 @@ class sql(object):
             day = datetime.datetime.strftime(day, "%Y-%m-%d")
             index_result_day.append(day)
         j = 0
-        # print (list(day_return.values()))
         if len(list(day_return.values())) == 0:
             minn = 0
         else:
@@ -284,6 +293,10 @@ class sql(object):
         # weeks
         my_params = {'coin': coin, 'period': 'week'}
         day_return = self.get_last(my_params)
+        if day_return['code'] == 1000:
+            day_return = day_return['data']
+        else:
+            return {"code": 2019, "success": False, "message": "api执行错误", "data": None}
         index_result_day = []
         value_result_day = [0, 0, 0, 0]
         '''
@@ -308,6 +321,10 @@ class sql(object):
         # months
         my_params = {'coin': coin, 'period': 'month'}
         day_return = self.get_last(my_params)
+        if day_return['code'] == 1000:
+            day_return = day_return['data']
+        else:
+            return {"code": 2019, "success": False, "message": "api执行错误", "data": None}
         index_result_day = []
         value_result_day = [0, 0, 0, 0, 0, 0]
         month = datetime.datetime.now()
@@ -330,11 +347,11 @@ class sql(object):
         value_results.append(value_result_day)
 
         result = [index_results, value_results]
-        return result
+        return {"code": 1000, "success": True, "message": "get frequency successfully", "data": result}
 
     def login(self, params):
         if 'code' not in params:
-            return {}
+            return {"code": 2020, "success": False, "message": "参数错误", "data": None}
 
         code = params['code']
         url = "https://api.weixin.qq.com/sns/jscode2session?appid=" + \
@@ -344,10 +361,94 @@ class sql(object):
         # print(code)
         # result = {}
         result = requests.get(url=url).json()
-        print(result)
         if 'openid' in result:
             openid = result['openid']
             print(openid)
-            return {'openid': openid}
+            try:
+                cursor = self.db.cursor()
+                sql_insert = "INSERT INTO user_info (user_id) VALUES ('%s')" % openid
+                cursor.execute(sql_insert)
+                self.db.commit()
+                cursor.close()
+            except BaseException as e:
+                print(e)
+                return {"code": 1000, "success": True, "message": "login successfully", "data": {'openid': openid}}
         else:
-            return result
+            return {"code": 2021, "success": False, "message": "获取openid错误", "data": result}
+
+    def get_personal_coins(self, params):
+        coin_list = []
+        if "user_id" not in params:
+            return {"code": "2006", "success": False, "message": "参数错误", "data": None}
+        sql = "select coin from personal_coins where user_id = '%s'" % params['user_id']
+        try:
+            cursor = self.db.cursor()
+            cursor.execute(sql)
+            for j in range(cursor.rowcount):
+                record = cursor.fetchone()
+                if record[0]:
+                    coin_list.append(record[0])
+            cursor.close()
+        except BaseException as e:
+            print(e)
+            return {"code": "2007", "success": False, "message": "从数据库获取自选币表时出错", "data": None}
+        if len(coin_list) == 0:
+            return {"code": "2008", "success": False, "message": "该用户还没有自选的币", "data": None}
+        return {"code": "500", "success": True, "message": "成功获取自选币信息", "data": coin_list}
+
+    def insert_personal_coin(self, params):
+        if "user_id" not in params or "coin" not in params:
+            return {"code": "2009", "success": False, "message": "参数错误", "date": None}
+        sql_select = "select user_id, coin from personal_coins where user_id = '%s' and coin = '%s'" % (
+            params['user_id'], params['coin'])
+        sql_insert = "INSERT INTO personal_coins (user_id, coin, select_time) VALUES ('%s', '%s', NOW())" % (
+            params['user_id'], params['coin'])
+        try:
+            cursor = self.db.cursor()
+            cursor.execute(sql_select)
+            if cursor.rowcount > 0:
+                result = cursor.fetchone()
+                if result[1]:
+                    return {"code": "2010", "success": False, "message": "该币已经在数据库了", "data": None}
+            cursor.close()
+        except BaseException as e:
+            print(e)
+            return {"code": "2011", "success": False, "message": "从数据库获取自选币表时出错", "data": None}
+        try:
+            cursor = self.db.cursor()
+            cursor.execute(sql_insert)
+            self.db.commit()
+            cursor.close()
+        except BaseException as e:
+            print(e)
+            return {"code": "2012", "success": False, "message": "向数据库插入元组时出错", "data": None}
+        return {"code": "630", "success": True, "message": "插入成功", "data": params['coin']}
+
+    def delete_personal_coin(self, params):
+        if "user_id" not in params or "coin" not in params:
+            return {"code": "2013", "success": False, "message": "参数错误", "date": None}
+        sql_select = "select user_id, coin from personal_coins where user_id = '%s' and coin = '%s'" % (params['user_id'], params['coin'])
+        print(sql_select)
+        sql_delete = "delete from personal_coins where user_id = '%s' and coin = '%s'" % (params['user_id'], params['coin'])
+        try:
+            cursor = self.db.cursor()
+            cursor.execute(sql_select)
+            if cursor.rowcount < 0:
+                return {"code": "2014", "success": False, "message": "数据库没有此项", "data": None}
+            else:
+                result = cursor.fetchone()
+                if not result[1]:
+                    return {"code": "2015", "success": False, "message": "查找到值为null", "data": None}
+            cursor.close()
+        except BaseException as e:
+            print(e)
+            return {"code": "2016", "success": False, "message": "从数据库获取自选币表时出错", "data": None}
+        try:
+            cursor = self.db.cursor()
+            cursor.execute(sql_delete)
+            self.db.commit()
+            cursor.close()
+        except BaseException as e:
+            print(e)
+            return {"code": "2017", "success": False, "message": "从数据库删除元组时出错", "data": params['coin']}
+        return {"code": "1000", "success": True, "message": "删除成功", "data": params['coin']}
