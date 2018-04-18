@@ -57,4 +57,7 @@ def login():
 
 if __name__ == '__main__':
     # app.run(debug=True)
-    app.run(host='0.0.0.0', debug=True, ssl_context='adhoc')
+    app.run(host='0.0.0.0', debug=True, ssl_context=(
+        'ssl/1_www.banbaofruit.com_bundle.crt',
+        'ssl/2_www.banbaofruit.com.key'
+    ))

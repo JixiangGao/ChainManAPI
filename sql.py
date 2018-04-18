@@ -289,7 +289,7 @@ class sql(object):
         '''
             something wrong here
         '''
-        for i in range(4):
+        for i in range(1, 5):
             week = int(datetime.datetime.strftime(now, "%W")) - i
             index_result_day.append(week)
         j = 0
@@ -344,9 +344,10 @@ class sql(object):
         # print(code)
         # result = {}
         result = requests.get(url=url).json()
-        # print(result)
+        print(result)
         if 'openid' in result:
             openid = result['openid']
+            print(openid)
             return {'openid': openid}
         else:
             return result
