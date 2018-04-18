@@ -353,7 +353,8 @@
 					  "message": "参数错误", 
 					  "success": false
 					}
-			成功	{
+			成功	级别从高到低顺序为5、4、3、2、1, 0表示当前周期没有更新
+					{
 						"code": "1000", 
 						"message": "获取成功", 
 						"success": true,
@@ -361,13 +362,13 @@
 							{
 							  "a": "https://www.banbaofruit.com/images/neo.png", 
 							  "b": "NEO", 
-							  "c": 3, 
+							  "c": 5, 
 							  "d": 1
 							}, 
 							{
 							  "a": "https://www.banbaofruit.com/images/xlm.png", 
 							  "b": "XLM", 
-							  "c": 3, 
+							  "c": 5, 
 							  "d": 1
 							}, 
 							……

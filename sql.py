@@ -181,9 +181,9 @@ class sql(object):
 
     def get_rank(self, params):
         # wait to adj
-        rank1_rate = 0.05
+        rank1_rate = 0.1
         rank2_rate = 0.1
-        rank3_rate = 0.4
+        rank3_rate = 0.35
         rank4_rate = 0.35
         rank5_rate = 0.1
 
@@ -233,22 +233,35 @@ class sql(object):
         rank123_num = (rank1_rate + rank2_rate + rank3_rate) * coins_num
         rank1234_num = (1 - rank5_rate) * coins_num
 
+        coins_all_list = []
+        for dict in config.info:
+            coins_all_list.append(dict['coin_full_name'])
+
         for coinName in coins_list:
-            return_dict[coinName] = 1
+            return_dict[coinName] = 5
             coin_total_dict[coinName] = coins_dict[coinName]['commits_num']  # 这里也可以改成是commit数，或total数
+        for coinName in coins_all_list:
+            if coinName not in return_dict:
+                return_dict[coinName] = 0
 
         coin_total_list = list(coin_total_dict.items())
         coin_total_list.sort(key=lambda x: x[1])
         for i in range(int(rank1234_num)):
-            return_dict[coin_total_list[i][0]] += 1
+            return_dict[coin_total_list[i][0]] -= 1
         for i in range(int(rank123_num)):
-            return_dict[coin_total_list[i][0]] += 1
+            return_dict[coin_total_list[i][0]] -= 1
         for i in range(int(rank12_num)):
-            return_dict[coin_total_list[i][0]] += 1
+            return_dict[coin_total_list[i][0]] -= 1
         for i in range(int(rank1_num)):
-            return_dict[coin_total_list[i][0]] += 1
+            return_dict[coin_total_list[i][0]] -= 1
 
         return {"code": 1000, "success": True, "message": "get rank成功", "data": return_dict}
+
+    def sortDictByValue(self, dict):  # return a turple_list
+        lst = list(dict.items())
+        lst.sort(key=lambda x: x[1])
+        lst.reverse()
+        return lst
 
     def get_frequency(self, params):
         if 'coin' not in params:
@@ -424,9 +437,11 @@ class sql(object):
     def delete_personal_coin(self, params):
         if "user_id" not in params or "coin" not in params:
             return {"code": "2013", "success": False, "message": "参数错误", "date": None}
-        sql_select = "select user_id, coin from personal_coins where user_id = '%s' and coin = '%s'" % (params['user_id'], params['coin'])
+        sql_select = "select user_id, coin from personal_coins where user_id = '%s' and coin = '%s'" % (
+        params['user_id'], params['coin'])
         print(sql_select)
-        sql_delete = "delete from personal_coins where user_id = '%s' and coin = '%s'" % (params['user_id'], params['coin'])
+        sql_delete = "delete from personal_coins where user_id = '%s' and coin = '%s'" % (
+        params['user_id'], params['coin'])
         try:
             cursor = self.db.cursor()
             cursor.execute(sql_select)
@@ -454,24 +469,28 @@ class sql(object):
         if 'period' not in params:
             return {"code": "2022", "success": False, "message": "参数错误", "data": None}
         period = params['period']
+
         rank_result = self.get_rank({'period': period})
         if rank_result['code'] == 1000:
             data = rank_result['data']
         else:
             return rank_result
+        data = self.sortDictByValue(data)
         coins_list = []
-        for coin in config.info:
+
+        full_short = {}
+        for i in config.info:
+            full_short[i['coin_full_name']] = i['coin_short_name']
+
+        for coin in data:
             element = {}
-            coin_full_name = coin['coin_full_name']
-            coin_short_name = coin['coin_short_name']
+            coin_full_name = coin[0]
+            coin_short_name = full_short[coin_full_name]
             low_short_name = coin_short_name.lower()
             element['a'] = 'https://www.banbaofruit.com/images/' \
-                + low_short_name + '.png'
+                           + low_short_name + '.png'
             element['b'] = coin_short_name
-            if coin_full_name in data:
-                element['c'] = data[coin_full_name]
-            else:
-                element['c'] = -1
+            element['c'] = coin[1]
             element['d'] = 1
             coins_list.append(element)
         return {"code": "1000", "success": True, "message": "获取成功", "data": coins_list}
