@@ -2,17 +2,16 @@ key = ""
 client_id = ""
 client_secret = ""
 
+appid = ""
+secret = ""
+
 mql_url = ""
 mql_user = ""
-mql_pswd = ".."
+mql_pswd = ""
 mql_db = ""
 
 info = [
     {
-        "coin_short_name": "ADA",
-        "coin_full_name": "Cardano",
-        "repo_name": "input-output-hk/cardano-sl"
-    }, {
         "coin_short_name": "NEO",
         "coin_full_name": "NEO",
         "repo_name": "neo-project/neo"
@@ -20,10 +19,6 @@ info = [
         "coin_short_name": "XLM",
         "coin_full_name": "stellar",
         "repo_name": "stellar/stellar-core"
-    }, {
-        "coin_short_name": "EOS",
-        "coin_full_name": "EOS",
-        "repo_name": "EOSIO/eos"
     }, {
         "coin_short_name": "DASH",
         "coin_full_name": "DASH",
@@ -96,6 +91,14 @@ info = [
         "coin_short_name": "XRP",
         "coin_full_name": "Ripple",
         "repo_name": "ripple/rippled"
+    }, {
+        "coin_short_name": "EOS",
+        "coin_full_name": "EOS",
+        "repo_name": "EOSIO/eos"
+    }, {
+        "coin_short_name": "ADA",
+        "coin_full_name": "Cardano",
+        "repo_name": "input-output-hk/cardano-sl"
     }, {
         "coin_short_name": "OMG",
         "coin_full_name": "Omisego",

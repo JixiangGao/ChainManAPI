@@ -1,0 +1,1 @@
+nohup gunicorn -w 4 --certfile=ssl/1_www.banbaofruit.com_bundle.crt --keyfile=ssl/2_www.banbaofruit.com.key -b 0.0.0.0:5000 --access-logfile api --error-logfile api, --log-file api api:app &
