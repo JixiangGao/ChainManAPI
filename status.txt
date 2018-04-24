@@ -364,14 +364,16 @@
 							  "b": "NEO", 
 							  "c": 5, 
 							  "d": 1
-							  "e": "NEO"
+							  "full_name": "NEO",
+							  "is_selected": 1
 							}, 
 							{
 							  "a": "https://www.banbaofruit.com/images/xlm.png", 
 							  "b": "XLM", 
 							  "c": 5, 
 							  "d": 1
-							  "e": "stellar"
+							  "full_name": "stellar",
+							  "is_selected": -1
 							}, 
 							……
 						]

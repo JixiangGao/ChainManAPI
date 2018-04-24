@@ -404,7 +404,7 @@ class sql(object):
             return {"code": "2007", "success": False, "message": "从数据库获取自选币表时出错", "data": None}
         if len(coin_list) == 0:
             return {"code": "2008", "success": False, "message": "该用户还没有自选的币", "data": None}
-        return {"code": "500", "success": True, "message": "成功获取自选币信息", "data": coin_list}
+        return {"code": "1000", "success": True, "message": "成功获取自选币信息", "data": coin_list}
 
     def insert_personal_coin(self, params):
         if "user_id" not in params or "coin" not in params:
@@ -432,16 +432,16 @@ class sql(object):
         except BaseException as e:
             print(e)
             return {"code": "2012", "success": False, "message": "向数据库插入元组时出错", "data": None}
-        return {"code": "630", "success": True, "message": "插入成功", "data": params['coin']}
+        return {"code": "1000", "success": True, "message": "插入成功", "data": params['coin']}
 
     def delete_personal_coin(self, params):
         if "user_id" not in params or "coin" not in params:
             return {"code": "2013", "success": False, "message": "参数错误", "date": None}
         sql_select = "select user_id, coin from personal_coins where user_id = '%s' and coin = '%s'" % (
-        params['user_id'], params['coin'])
+            params['user_id'], params['coin'])
         print(sql_select)
         sql_delete = "delete from personal_coins where user_id = '%s' and coin = '%s'" % (
-        params['user_id'], params['coin'])
+            params['user_id'], params['coin'])
         try:
             cursor = self.db.cursor()
             cursor.execute(sql_select)
@@ -466,7 +466,7 @@ class sql(object):
         return {"code": "1000", "success": True, "message": "删除成功", "data": params['coin']}
 
     def get_coins_list(self, params):
-        if 'period' not in params:
+        if 'period' not in params or 'user_id' not in params:
             return {"code": "2022", "success": False, "message": "参数错误", "data": None}
         period = params['period']
 
@@ -482,6 +482,11 @@ class sql(object):
         for i in config.info:
             full_short[i['coin_full_name']] = i['coin_short_name']
 
+        re = self.get_personal_coins(params)
+        if re['code'] != '1000':
+            return re
+        personal_coins = re['data']
+
         for coin in data:
             element = {}
             coin_full_name = coin[0]
@@ -492,7 +497,11 @@ class sql(object):
             element['b'] = coin_short_name
             element['c'] = coin[1]
             element['d'] = 1
-            element['e'] = coin_full_name
+            element['full_name'] = coin_full_name
+            if coin_full_name in personal_coins:
+                element['is_selected'] = 1
+            else:
+                element['is_selected'] = -1
             coins_list.append(element)
         return {"code": "1000", "success": True, "message": "获取成功", "data": coins_list}
 
