@@ -3,9 +3,17 @@
 from flask import Flask, jsonify
 from flask import request
 import sql
+from werkzeug.routing import BaseConverter
+
+
+class RegexConverter(BaseConverter):
+    def __init__(self, map, *args):
+        self.map = map
+        self.regex = args[0]
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False  # 让支持jsonify中文
+app.url_map.converters['regex'] = RegexConverter
 
 
 @app.route('/get_coins', methods=['GET'])
@@ -86,6 +94,14 @@ def get_coins_list():
     result = mysql.get_coins_list(request.args)
     mysql.db_close()
     return jsonify(result)
+
+@app.route('/coinmarketcap/<regex(".*"):url>')
+def coinmarketcap(url):
+    mysql = sql.sql()
+    result = mysql.coinmarketcap(url, request.args)
+    mysql.db_close()
+    return jsonify(result)
+
 
 
 if __name__ == '__main__':

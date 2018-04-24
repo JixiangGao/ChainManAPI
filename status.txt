@@ -374,4 +374,49 @@
 							……
 						]
 					}
+					
+					
+/coinmarketcap/.....
+	爬取coinmarketcap币种信息
+	格式参考 https://coinmarketcap.com/api/
+	例如 https://www.banbaofruit.com:5000/coinmarketcap/ticker/?convert=EUR&limit=10
+		 https://www.banbaofruit.com:5000/coinmarketcap/ticker/bitcoin/?convert=EUR
+	return: 错误	{
+						"code": "2023", 
+						"data": null, 
+						"message": "获取失败", 
+						"success": false
+					}
+			成功	{
+						"code": "1000", 
+						"data": [
+							{
+								"24h_volume_usd": "8238000000.0", 
+								"available_supply": "16996312.0", 
+								"id": "bitcoin", 
+								"last_updated": "1524563372", 
+								"market_cap_usd": "157231692570", 
+								"max_supply": "21000000.0", 
+								"name": "Bitcoin", 
+								"percent_change_1h": "0.04", 
+								"percent_change_24h": "3.88", 
+								"percent_change_7d": "14.4", 
+								"price_btc": "1.0", 
+								"price_usd": "9250.93", 
+								"rank": "1", 
+								"symbol": "BTC", 
+								"total_supply": "16996312.0"
+							}
+						], 
+						"message": "获取成功", 
+						"success": true
+					}
+							 
+		 
+		 
+		 
+		 
+		 
+		 
+		 
 						

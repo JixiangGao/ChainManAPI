@@ -495,4 +495,15 @@ class sql(object):
             coins_list.append(element)
         return {"code": "1000", "success": True, "message": "获取成功", "data": coins_list}
 
+    def coinmarketcap(self, url, params):
+        url = "https://api.coinmarketcap.com/v1/" + url
+        try:
+            result = requests.get(url=url, data=params).json()
+            if 'error' not in result:
+                return {"code": "1000", "success": True, "message": "获取成功", "data": result}
+            else:
+                return {"code": "2023", "success": False, "message": result['error'], "data": None}
+        except BaseException as e:
+            print(e)
+            return {"code": "2023", "success": False, "message": "获取失败", "data": None}
 
