@@ -492,6 +492,7 @@ class sql(object):
             element['b'] = coin_short_name
             element['c'] = coin[1]
             element['d'] = 1
+            element['e'] = coin_full_name
             coins_list.append(element)
         return {"code": "1000", "success": True, "message": "获取成功", "data": coins_list}
 

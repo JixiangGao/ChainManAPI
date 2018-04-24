@@ -364,12 +364,14 @@
 							  "b": "NEO", 
 							  "c": 5, 
 							  "d": 1
+							  "e": "NEO"
 							}, 
 							{
 							  "a": "https://www.banbaofruit.com/images/xlm.png", 
 							  "b": "XLM", 
 							  "c": 5, 
 							  "d": 1
+							  "e": "stellar"
 							}, 
 							……
 						]
