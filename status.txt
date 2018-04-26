@@ -323,17 +323,26 @@
 	return：错误	{
 						"code": "2020", 
 						"data": null, 
-						"message": "参数错误", 
+						"message": "获取code失败", 
 						"success": false
 					}
 					{
 						"code": "2021", 
-						"message": "获取openid错误", 
+						"message": "获取access_token失败", 
 						"success": false,
-						"data": {
-							"errcode": 40029, 
-							"errmsg": "invalid code, hints: [ req_id: HPSLMa0548th56 ]"
-						}
+						"data": null
+					}
+					{
+						"code": 2022, 
+						"success": False, 
+						"message": "获取用户信息失败", 
+						"data": {'openid': openid}
+					}
+					{
+						"code": 2023, 
+						"success": False, 
+						"message": "获取openid错误", 
+						"data": result
 					}
 					
 			成功	{
@@ -348,7 +357,7 @@
 	获取币种列表
 	params: period (week, month)
 	return:	错误	{
-					  "code": "2022", 
+					  "code": "2024", 
 					  "data": null, 
 					  "message": "参数错误", 
 					  "success": false
@@ -386,7 +395,7 @@
 	例如 https://www.banbaofruit.com:5000/coinmarketcap/ticker/?convert=EUR&limit=10
 		 https://www.banbaofruit.com:5000/coinmarketcap/ticker/bitcoin/?convert=EUR
 	return: 错误	{
-						"code": "2023", 
+						"code": "2025", 
 						"data": null, 
 						"message": "获取失败", 
 						"success": false
@@ -416,11 +425,3 @@
 						"success": true
 					}
 							 
-		 
-		 
-		 
-		 
-		 
-		 
-		 
-						

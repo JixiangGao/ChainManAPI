@@ -361,35 +361,62 @@ class sql(object):
 
     def login(self, params):
         if 'code' not in params:
-            return {"code": 2020, "success": False, "message": "参数错误", "data": None}
-
+            return {"code": 2020, "success": False, "message": "获取code失败", "data": None}
         code = params['code']
+        
         url = "https://api.weixin.qq.com/sns/jscode2session?appid=" + \
               config.appid + "&secret=" + config.secret + \
               "&js_code=" + code + "&grant_type=authorization_code"
-        # print(url)
-        # print(code)
-        # result = {}
         result = requests.get(url=url).json()
+        
+        urlStr1 = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid="+config.appid+"&secret="+config.secret
+        result1 = requests.get(url=urlStr1).json() 
+        accessToken = ""
+        if 'access_token':
+            accessToken = result1['access_token']
+        else:
+            return {"code": 2021, "success": False, "message": "获取access_token失败", "data": None}
+        
         if 'openid' in result:
             openid = result['openid']
-            print(openid)
+            
+            urlStr2 = "https://api.weixin.qq.com/cgi-bin/user/info?access_token="+accessToken+"&openid="+openid
+            result2 = requests.get(url=urlStr2).json()
+            nickname = ""
+            #if 'nickname' in result2:
+            #    nickname = result2['nickname']
+                #print("nickname: "+nickname)
+            #else:
+            #    return {"code": 2022, "success": False, "message": "获取用户信息失败", "data": {'openid': openid}}
+            
             try:
+                sql = "INSERT INTO user_info (user_id, nickname) VALUES ('%s', '%s')" % (openid, nickname)
+                sql_select = "SELECT user_id, nickname FROM user_info WHERE user_id = '%s'" % openid
                 cursor = self.db.cursor()
-                sql_insert = "INSERT INTO user_info (user_id) VALUES ('%s')" % openid
-                cursor.execute(sql_insert)
+                cursor.execute(sql_select)
+                if cursor.rowcount > 0:
+                    record = cursor.fetchone()
+                    if record[0]:
+                        if record[1] == nickname:
+                            return {"code": 1000, "success": True, "message": "数据库存在该用户，无需更新，登录成功", "data": openid}
+                        else:
+                            sql = "UPDATE user_info SET nickname = '%s' WHERE user_id = '%s'" % (nickname, openid)
+                cursor.close()
+                
+                cursor = self.db.cursor()
+                cursor.execute(sql)
                 self.db.commit()
                 cursor.close()
             except BaseException as e:
                 print(e)
-                return {"code": 1000, "success": True, "message": "login successfully", "data": {'openid': openid}}
+            return {"code": 1000, "success": True, "message": "数据库更新成功， 登录成功", "data": {'openid': openid}}
         else:
-            return {"code": 2021, "success": False, "message": "获取openid错误", "data": result}
+            return {"code": 2023, "success": False, "message": "获取openid错误", "data": result}
 
     def get_personal_coins(self, params):
         coin_list = []
         if "user_id" not in params:
-            return {"code": "2006", "success": False, "message": "参数错误", "data": None}
+            return {"code": 2006, "success": False, "message": "参数错误", "data": None}
         sql = "select coin from personal_coins where user_id = '%s'" % params['user_id']
         try:
             cursor = self.db.cursor()
@@ -401,14 +428,14 @@ class sql(object):
             cursor.close()
         except BaseException as e:
             print(e)
-            return {"code": "2007", "success": False, "message": "从数据库获取自选币表时出错", "data": None}
+            return {"code": 2007, "success": False, "message": "从数据库获取自选币表时出错", "data": None}
         if len(coin_list) == 0:
-            return {"code": "2008", "success": False, "message": "该用户还没有自选的币", "data": None}
-        return {"code": "1000", "success": True, "message": "成功获取自选币信息", "data": coin_list}
+            return {"code": 2008, "success": False, "message": "该用户还没有自选的币", "data": None}
+        return {"code": 1000, "success": True, "message": "成功获取自选币信息", "data": coin_list}
 
     def insert_personal_coin(self, params):
         if "user_id" not in params or "coin" not in params:
-            return {"code": "2009", "success": False, "message": "参数错误", "date": None}
+            return {"code": 2009, "success": False, "message": "参数错误", "date": None}
         sql_select = "select user_id, coin from personal_coins where user_id = '%s' and coin = '%s'" % (
             params['user_id'], params['coin'])
         sql_insert = "INSERT INTO personal_coins (user_id, coin, select_time) VALUES ('%s', '%s', NOW())" % (
@@ -419,11 +446,11 @@ class sql(object):
             if cursor.rowcount > 0:
                 result = cursor.fetchone()
                 if result[1]:
-                    return {"code": "2010", "success": False, "message": "该币已经在数据库了", "data": None}
+                    return {"code": 2010, "success": False, "message": "该币已经在数据库了", "data": None}
             cursor.close()
         except BaseException as e:
             print(e)
-            return {"code": "2011", "success": False, "message": "从数据库获取自选币表时出错", "data": None}
+            return {"code": 2011, "success": False, "message": "从数据库获取自选币表时出错", "data": None}
         try:
             cursor = self.db.cursor()
             cursor.execute(sql_insert)
@@ -431,30 +458,30 @@ class sql(object):
             cursor.close()
         except BaseException as e:
             print(e)
-            return {"code": "2012", "success": False, "message": "向数据库插入元组时出错", "data": None}
+            return {"code": 2012, "success": False, "message": "向数据库插入元组时出错", "data": None}
         return {"code": "1000", "success": True, "message": "插入成功", "data": params['coin']}
 
     def delete_personal_coin(self, params):
         if "user_id" not in params or "coin" not in params:
-            return {"code": "2013", "success": False, "message": "参数错误", "date": None}
+            return {"code": 2013, "success": False, "message": "参数错误", "date": None}
         sql_select = "select user_id, coin from personal_coins where user_id = '%s' and coin = '%s'" % (
             params['user_id'], params['coin'])
-        print(sql_select)
+        #print(sql_select)
         sql_delete = "delete from personal_coins where user_id = '%s' and coin = '%s'" % (
             params['user_id'], params['coin'])
         try:
             cursor = self.db.cursor()
             cursor.execute(sql_select)
             if cursor.rowcount < 0:
-                return {"code": "2014", "success": False, "message": "数据库没有此项", "data": None}
+                return {"code": 2014, "success": False, "message": "数据库没有此项", "data": None}
             else:
                 result = cursor.fetchone()
                 if not result[1]:
-                    return {"code": "2015", "success": False, "message": "查找到值为null", "data": None}
+                    return {"code": 2015, "success": False, "message": "查找到值为null", "data": None}
             cursor.close()
         except BaseException as e:
             print(e)
-            return {"code": "2016", "success": False, "message": "从数据库获取自选币表时出错", "data": None}
+            return {"code": 2016, "success": False, "message": "从数据库获取自选币表时出错", "data": None}
         try:
             cursor = self.db.cursor()
             cursor.execute(sql_delete)
@@ -462,12 +489,12 @@ class sql(object):
             cursor.close()
         except BaseException as e:
             print(e)
-            return {"code": "2017", "success": False, "message": "从数据库删除元组时出错", "data": params['coin']}
+            return {"code": 2017, "success": False, "message": "从数据库删除元组时出错", "data": params['coin']}
         return {"code": "1000", "success": True, "message": "删除成功", "data": params['coin']}
 
     def get_coins_list(self, params):
         if 'period' not in params or 'user_id' not in params:
-            return {"code": "2022", "success": False, "message": "参数错误", "data": None}
+            return {"code": 2024, "success": False, "message": "参数错误", "data": None}
         period = params['period']
 
         rank_result = self.get_rank({'period': period})
@@ -483,7 +510,7 @@ class sql(object):
             full_short[i['coin_full_name']] = i['coin_short_name']
 
         re = self.get_personal_coins(params)
-        if re['code'] != '1000':
+        if re['code'] != 1000:
             return re
         personal_coins = re['data']
 
@@ -503,17 +530,17 @@ class sql(object):
             else:
                 element['is_selected'] = -1
             coins_list.append(element)
-        return {"code": "1000", "success": True, "message": "获取成功", "data": coins_list}
+        return {"code": 1000, "success": True, "message": "获取成功", "data": coins_list}
 
     def coinmarketcap(self, url, params):
         url = "https://api.coinmarketcap.com/v1/" + url
         try:
             result = requests.get(url=url, data=params).json()
             if 'error' not in result:
-                return {"code": "1000", "success": True, "message": "获取成功", "data": result}
+                return {"code": 1000, "success": True, "message": "获取成功", "data": result}
             else:
-                return {"code": "2023", "success": False, "message": result['error'], "data": None}
+                return {"code": 2025, "success": False, "message": result['error'], "data": None}
         except BaseException as e:
             print(e)
-            return {"code": "2023", "success": False, "message": "获取失败", "data": None}
+            return {"code": 2025, "success": False, "message": "获取失败", "data": None}
 
