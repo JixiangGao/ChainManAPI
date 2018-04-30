@@ -297,6 +297,8 @@ class sql(object):
             if day_return[key][j]['day'] == index_result_day[i]:
                 value_result_day[i] = day_return[key][j]['total']
                 j += 1
+        index_result_day.reverse()
+        value_result_day.reverse()
         index_results.append(index_result_day)
         value_results.append(value_result_day)
 
@@ -325,6 +327,8 @@ class sql(object):
             if day_return[key][j]['week'] == index_result_day[i]:
                 value_result_day[i] = day_return[key][j]['total']
                 j += 1
+        index_result_day.reverse()
+        value_result_day.reverse()
         index_results.append(index_result_day)
         value_results.append(value_result_day)
 
@@ -353,6 +357,8 @@ class sql(object):
             if day_return[key][j]['month'] == index_result_day[i]:
                 value_result_day[i] = day_return[key][j]['total']
                 j += 1
+        index_result_day.reverse()
+        value_result_day.reverse()
         index_results.append(index_result_day)
         value_results.append(value_result_day)
 
