@@ -369,32 +369,32 @@ class sql(object):
         if 'code' not in params:
             return {"code": 2020, "success": False, "message": "获取code失败", "data": None}
         code = params['code']
-        
+
         url = "https://api.weixin.qq.com/sns/jscode2session?appid=" + \
               config.appid + "&secret=" + config.secret + \
               "&js_code=" + code + "&grant_type=authorization_code"
         result = requests.get(url=url).json()
-        
-        urlStr1 = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid="+config.appid+"&secret="+config.secret
-        result1 = requests.get(url=urlStr1).json() 
+
+        urlStr1 = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=" + config.appid + "&secret=" + config.secret
+        result1 = requests.get(url=urlStr1).json()
         accessToken = ""
         if 'access_token':
             accessToken = result1['access_token']
         else:
             return {"code": 2021, "success": False, "message": "获取access_token失败", "data": None}
-        
+
         if 'openid' in result:
             openid = result['openid']
-            
-            urlStr2 = "https://api.weixin.qq.com/cgi-bin/user/info?access_token="+accessToken+"&openid="+openid
+
+            urlStr2 = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=" + accessToken + "&openid=" + openid
             result2 = requests.get(url=urlStr2).json()
             nickname = ""
-            #if 'nickname' in result2:
+            # if 'nickname' in result2:
             #    nickname = result2['nickname']
-                #print("nickname: "+nickname)
-            #else:
+            # print("nickname: "+nickname)
+            # else:
             #    return {"code": 2022, "success": False, "message": "获取用户信息失败", "data": {'openid': openid}}
-            
+
             try:
                 sql = "INSERT INTO user_info (user_id, nickname) VALUES ('%s', '%s')" % (openid, nickname)
                 sql_select = "SELECT user_id, nickname FROM user_info WHERE user_id = '%s'" % openid
@@ -408,7 +408,7 @@ class sql(object):
                         else:
                             sql = "UPDATE user_info SET nickname = '%s' WHERE user_id = '%s'" % (nickname, openid)
                 cursor.close()
-                
+
                 cursor = self.db.cursor()
                 cursor.execute(sql)
                 self.db.commit()
@@ -435,8 +435,11 @@ class sql(object):
         except BaseException as e:
             print(e)
             return {"code": 2007, "success": False, "message": "从数据库获取自选币表时出错", "data": None}
-        if len(coin_list) == 0:
-            return {"code": 2008, "success": False, "message": "该用户还没有自选的币", "data": None}
+
+        # ------- delete the errcode 2008 -------
+        # if len(coin_list) == 0:
+        #     return {"code": 2008, "success": False, "message": "该用户还没有自选的币", "data": None}
+        
         return {"code": 1000, "success": True, "message": "成功获取自选币信息", "data": coin_list}
 
     def insert_personal_coin(self, params):
@@ -472,7 +475,7 @@ class sql(object):
             return {"code": 2013, "success": False, "message": "参数错误", "date": None}
         sql_select = "select user_id, coin from personal_coins where user_id = '%s' and coin = '%s'" % (
             params['user_id'], params['coin'])
-        #print(sql_select)
+
         sql_delete = "delete from personal_coins where user_id = '%s' and coin = '%s'" % (
             params['user_id'], params['coin'])
         try:
@@ -516,6 +519,15 @@ class sql(object):
             full_short[i['coin_full_name']] = i['coin_short_name']
 
         re = self.get_personal_coins(params)
+
+        # ------- delete the errcode 2008 -------
+        # if re['code'] == 1000:
+        #     personal_coins = re['data']
+        # elif re['code'] == 2008:
+        #     personal_coins = {}
+        # else:
+        #     return re
+
         if re['code'] != 1000:
             return re
         personal_coins = re['data']
@@ -549,4 +561,3 @@ class sql(object):
         except BaseException as e:
             print(e)
             return {"code": 2025, "success": False, "message": "获取失败", "data": None}
-
