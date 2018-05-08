@@ -548,8 +548,9 @@ class sql(object):
             # get coins rank
             import coinName2Id
             name_id = coinName2Id.data
-            if coin_full_name in name_id:
-                id = str(name_id[coin_full_name])
+            low_coin_full_name = coin_full_name.lower()
+            if low_coin_full_name in name_id:
+                id = str(name_id[low_coin_full_name])
                 if id in rank_data:
                     coin_rank = rank_data[id]['rank']
                 else:
@@ -557,6 +558,7 @@ class sql(object):
             else:
                 coin_rank = '-'
             element['d'] = coin_rank
+            # -------
 
             element['full_name'] = coin_full_name
             if coin_full_name in personal_coins:
