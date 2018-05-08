@@ -532,6 +532,9 @@ class sql(object):
             return re
         personal_coins = re['data']
 
+        # get coins market rank
+        rank_data = self.get_coins_market_rank()
+
         for coin in data:
             element = {}
             coin_full_name = coin[0]
@@ -541,7 +544,20 @@ class sql(object):
                            + low_short_name + '.png'
             element['b'] = coin_short_name
             element['c'] = coin[1]
-            element['d'] = 1
+
+            # get coins rank
+            import coinName2Id
+            name_id = coinName2Id.data
+            if coin_full_name in name_id:
+                id = str(name_id[coin_full_name])
+                if id in rank_data:
+                    coin_rank = rank_data[id]['rank']
+                else:
+                    coin_rank = '-'
+            else:
+                coin_rank = '-'
+            element['d'] = coin_rank
+
             element['full_name'] = coin_full_name
             if coin_full_name in personal_coins:
                 element['is_selected'] = 1
@@ -561,3 +577,13 @@ class sql(object):
         except BaseException as e:
             print(e)
             return {"code": 2025, "success": False, "message": "获取失败", "data": None}
+
+    def get_coins_market_rank(self):
+        url = "https://api.coinmarketcap.com/v2/ticker/"
+        try:
+            rank_data = requests.get(url).json()['data']
+            return rank_data
+        except BaseException as e:
+            return {}
+
+
