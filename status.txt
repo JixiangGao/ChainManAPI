@@ -358,6 +358,8 @@
 /get_coins_list			
 	获取币种列表
 	params: period (week, month)
+	        user_id
+			order_by=market_rank (可选，data数据根据市值排序)
 	return:	错误	{
 					  "code": "2024", 
 					  "data": null, 

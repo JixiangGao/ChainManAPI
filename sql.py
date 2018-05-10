@@ -439,7 +439,7 @@ class sql(object):
         # ------- delete the errcode 2008 -------
         # if len(coin_list) == 0:
         #     return {"code": 2008, "success": False, "message": "该用户还没有自选的币", "data": None}
-        
+
         return {"code": 1000, "success": True, "message": "成功获取自选币信息", "data": coin_list}
 
     def insert_personal_coin(self, params):
@@ -554,9 +554,9 @@ class sql(object):
                 if id in rank_data:
                     coin_rank = rank_data[id]['rank']
                 else:
-                    coin_rank = '-'
+                    coin_rank = 99999
             else:
-                coin_rank = '-'
+                coin_rank = 99999
             element['d'] = coin_rank
             # -------
 
@@ -566,6 +566,17 @@ class sql(object):
             else:
                 element['is_selected'] = -1
             coins_list.append(element)
+
+        # order by market rank
+        if 'order_by' in params and params['order_by'] == 'market_rank':
+            coins_list.sort(key=lambda x: x['d'])
+        #
+
+        # transfer 99999 to '-' in market rank
+        for i in coins_list:
+            if i['d'] == 99999:
+                i['d'] = '-'
+
         return {"code": 1000, "success": True, "message": "获取成功", "data": coins_list}
 
     def coinmarketcap(self, url, params):
