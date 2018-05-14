@@ -33,7 +33,7 @@ class GetInfo(object):
                 # count = count + 1
                 commit_time = commit.commit.committer.date
                 time_2018_1_1 = datetime.datetime.strptime(
-                    '2018-03-01 00:00:00', '%Y-%m-%d %H:%M:%S')
+                    '2017-11-01 00:00:00', '%Y-%m-%d %H:%M:%S')
                 if commit_time < time_2018_1_1:
                     break
                 result = self.is_existed(commit)
