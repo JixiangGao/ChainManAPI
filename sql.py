@@ -533,7 +533,7 @@ class sql(object):
         personal_coins = re['data']
 
         # get coins market rank
-        rank_data = self.get_coins_market_rank()
+        ticker_data = self.get_ticker()
 
         for coin in data:
             element = {}
@@ -551,12 +551,15 @@ class sql(object):
             low_coin_full_name = coin_full_name.lower()
             if low_coin_full_name in name_id:
                 id = str(name_id[low_coin_full_name])
-                if id in rank_data:
-                    coin_rank = rank_data[id]['rank']
+                if id in ticker_data:
+                    coin_rank = ticker_data[id]['rank']
+                    element['current_price'] = ticker_data[id]['quotes']['CNY']['price']
                 else:
                     coin_rank = 99999
+                    element['current_price'] = '-'
             else:
                 coin_rank = 99999
+                element['current_price'] = '-'
             element['d'] = coin_rank
             # -------
 
@@ -591,11 +594,17 @@ class sql(object):
             print(e)
             return {"code": 2025, "success": False, "message": "获取失败", "data": None}
 
-    def get_coins_market_rank(self):
-        url = "https://api.coinmarketcap.com/v2/ticker/"
+    def get_ticker(self):
+        url = "https://api.coinmarketcap.com/v2/ticker/?convert=cny&limit=100&"
+        start = 1
+        data = {}
         try:
-            rank_data = requests.get(url).json()['data']
-            return rank_data
+            for start in range(1, 201, 100):
+                re_url = url + 'start=' + str(start)
+                rank_data = requests.get(re_url).json()['data']
+                data.update(rank_data)
+            
+            return data
         except BaseException as e:
             return {}
 
