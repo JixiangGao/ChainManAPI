@@ -582,17 +582,49 @@ class sql(object):
 
         return {"code": 1000, "success": True, "message": "获取成功", "data": coins_list}
 
-    def coinmarketcap(self, url, params):
-        url = "https://api.coinmarketcap.com/v1/" + url
+    def coinmarketcap(self, sub_url, params):
+        url = "https://api.coinmarketcap.com/v1/" + sub_url
         try:
             result = requests.get(url=url, data=params).json()
             if 'error' not in result:
+
+                # 大整数之间用逗号分隔
+                if sub_url[:6] == 'ticker':
+                    if result[0]['market_cap_usd'] is not None:
+                        result[0]['market_cap_usd'] = self.num_to_dotNUm(result[0]['market_cap_usd'])
+                    if result[0]['available_supply'] is not None:
+                        result[0]['available_supply'] = self.num_to_dotNUm(result[0]['available_supply'])
+                    if result[0]['total_supply'] is not None:
+                        result[0]['total_supply'] = self.num_to_dotNUm(result[0]['total_supply'])
+                    if result[0]['max_supply'] is not None:
+                        result[0]['max_supply'] = self.num_to_dotNUm(result[0]['max_supply'])
+
                 return {"code": 1000, "success": True, "message": "获取成功", "data": result}
             else:
                 return {"code": 2025, "success": False, "message": result['error'], "data": None}
         except BaseException as e:
             print(e)
             return {"code": 2025, "success": False, "message": "获取失败", "data": None}
+
+    def num_to_dotNUm(self, num_str):
+        num = float(num_str)
+        num = int(num)
+        if num != 0:
+            a = num % 1000
+            num = int(num / 1000)
+            dotNum = str(a)
+            dotNum = dotNum.zfill(3)
+        else:
+            return num_str
+
+        while num != 0:
+            a = num % 1000
+            num = int(num / 1000)
+            if num > 0:
+                dotNum = str(a).zfill(3) + ',' + dotNum
+            else:
+                dotNum = str(a) + ',' + dotNum
+        return dotNum
 
     def get_ticker(self):
         url = "https://api.coinmarketcap.com/v2/ticker/?convert=cny&limit=100&"
@@ -603,7 +635,7 @@ class sql(object):
                 re_url = url + 'start=' + str(start)
                 rank_data = requests.get(re_url).json()['data']
                 data.update(rank_data)
-            
+
             return data
         except BaseException as e:
             return {}
