@@ -6,6 +6,7 @@ import time
 import traceback
 import datetime
 import requests
+import json
 
 
 class sql(object):
@@ -627,6 +628,18 @@ class sql(object):
         return dotNum
 
     def get_ticker(self):
+        data = {}
+        try:
+            filename = './temp.json'
+            file = open(filename, "r")
+            data = json.load(file)
+            file.close()
+            return data
+        except BaseException as e:
+            return {}
+
+'''
+    def get_ticker(self):
         url = "https://api.coinmarketcap.com/v2/ticker/?convert=cny&limit=100&"
         start = 1
         data = {}
@@ -639,5 +652,7 @@ class sql(object):
             return data
         except BaseException as e:
             return {}
+'''
+
 
 

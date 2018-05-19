@@ -139,10 +139,10 @@ while True:
         traceback.print_exc()
     finally:
         # time.sleep(5)
-        for i in range(30):
+        for i in range(10):
             ######
             time_now = time.strftime('%Y-%m-%d %H:%M:%S',
                                      time.localtime(time.time()))
-            print(time_now, "ramain %dm" % (30 - i))
+            print(time_now, "ramain %dm" % (10 - i))
             time.sleep(60)
 
