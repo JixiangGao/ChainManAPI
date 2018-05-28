@@ -11,7 +11,7 @@ mql_pswd = ""
 mql_db = ""
 
 info = [
-    {'coin_short_name': 'ICN', 'coin_full_name': 'icon', 'repo_name': 'theloopkr/loopchain'},
+    {'coin_short_name': 'IC', 'coin_full_name': 'icon', 'repo_name': 'theloopkr/loopchain'},
 	{'coin_short_name': 'TRX', 'coin_full_name': 'tron', 'repo_name': 'tronprotocol/java-tron'},
 	{'coin_short_name': 'NEM', 'coin_full_name': 'nem', 'repo_name': 'NemProject/nem.core'},
 	{'coin_short_name': 'MIOTA', 'coin_full_name': 'iota', 'repo_name': 'iotaledger/wallet'},
