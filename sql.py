@@ -315,7 +315,8 @@ class sql(object):
         '''
             something wrong here
         '''
-        for i in range(1, 5):
+        # for i in range(1, 5):
+        for i in range(4):
             week = int(datetime.datetime.strftime(now, "%W")) - i
             index_result_day.append(week)
         j = 0
@@ -325,8 +326,11 @@ class sql(object):
             minn = min(len(list(day_return.values())[0]), 4)
         for i in range(minn):
             key = list(day_return.keys())[0]
+            # print(index_result_day)
+            # print(day_return[key][j]['week'])
             if day_return[key][j]['week'] == index_result_day[i]:
                 value_result_day[i] = day_return[key][j]['total']
+                # print(value_result_day[i])
                 j += 1
         index_result_day.reverse()
         value_result_day.reverse()
