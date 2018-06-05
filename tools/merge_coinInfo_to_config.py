@@ -30,7 +30,7 @@ for coin in data:
         count += 1
         print(("{'coin_short_name': '%s', 'coin_full_name': '%s', 'repo_name': '%s'},") %(coin['coin_short_name'], coin['coin_full_name'], coin['coin_repo']))
 
-    # 只找其中100个
+    # 只找其中200个
     if count == 200:
         break
 
