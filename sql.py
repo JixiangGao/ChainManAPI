@@ -123,7 +123,7 @@ class sql(object):
 
         for i in range(1, loop_times + 1):
             if period == 'week':
-                sql_where_condition = "YEARWEEK(date_format(commit_time,'%%Y-%%m-%%d')) = YEARWEEK(now())- %d" % i
+                sql_where_condition = "YEARWEEK(date_format(commit_time,'%%Y-%%m-%%d'),1) = YEARWEEK(now(),1)- %d" % i
                 sql_dateformat = "WEEK(date_format(max(commit_time),'%Y-%m-%d'))"
             elif period == 'month':
                 sql_where_condition = "date_format(commit_time, '%%Y %%m') = date_format(DATE_SUB(curdate(), INTERVAL %d MONTH),'%%Y %%m')" % i
@@ -191,7 +191,7 @@ class sql(object):
         sql_get_rank = \
             "select coin, count(*), sum(additions), sum(deletions), sum(total) \
             from repo_commits \
-            where YEARWEEK(date_format(commit_time,'%Y-%m-%d')) = YEARWEEK(now())- 1 \
+            where YEARWEEK(date_format(commit_time,'%Y-%m-%d'),1) = YEARWEEK(now(),1)- 1 \
             group by coin "
 
         if 'period' in params:
@@ -326,11 +326,8 @@ class sql(object):
             minn = min(len(list(day_return.values())[0]), 4)
         for i in range(minn):
             key = list(day_return.keys())[0]
-            # print(index_result_day)
-            # print(day_return[key][j]['week'])
             if day_return[key][j]['week'] == index_result_day[i]:
                 value_result_day[i] = day_return[key][j]['total']
-                # print(value_result_day[i])
                 j += 1
         index_result_day.reverse()
         value_result_day.reverse()
@@ -561,10 +558,10 @@ class sql(object):
                     element['current_price'] = ticker_data[id]['quotes']['CNY']['price']
                 else:
                     coin_rank = 99999
-                    element['current_price'] = '-'
+                    element['current_price'] = 0
             else:
                 coin_rank = 99999
-                element['current_price'] = '-'
+                element['current_price'] = 0
             element['d'] = coin_rank
             # -------
 
@@ -581,9 +578,9 @@ class sql(object):
         #
 
         # transfer 99999 to '-' in market rank
-        for i in coins_list:
-            if i['d'] == 99999:
-                i['d'] = '-'
+        # for i in coins_list:
+        #     if i['d'] == 99999:
+        #         i['d'] = '-'
 
         return {"code": 1000, "success": True, "message": "获取成功", "data": coins_list}
 
@@ -652,11 +649,7 @@ class sql(object):
                 re_url = url + 'start=' + str(start)
                 rank_data = requests.get(re_url).json()['data']
                 data.update(rank_data)
-
             return data
         except BaseException as e:
             return {}
 '''
-
-
-
