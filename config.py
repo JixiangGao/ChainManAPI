@@ -13,11 +13,11 @@ mql_pswd = ""
 mql_db = ""
 
 
+
 info = [
 	{'coin_short_name': 'ZIL', 'coin_full_name': 'Zilliqa', 'repo_name': 'Zilliqa/Zilliqa'},
 	{'coin_short_name': 'BTM', 'coin_full_name': 'Bytom', 'repo_name': 'Bytom/bytom'},
 	{'coin_short_name': 'GNT', 'coin_full_name': 'Golem', 'repo_name': 'golemfactory/golem'},
-	{'coin_short_name': 'RHOC', 'coin_full_name': 'RChain', 'repo_name': 'rchain/'},
 	{'coin_short_name': 'BTCP', 'coin_full_name': 'Bitcoin Private', 'repo_name': 'BTCPrivate/BitcoinPrivate'},
 	{'coin_short_name': 'BCD', 'coin_full_name': 'Bitcoin Diamond', 'repo_name': 'eveybcd/BitcoinDiamond'},
 	{'coin_short_name': 'HSR', 'coin_full_name': 'Hshare', 'repo_name': 'HcashOrg/hcashd'},
@@ -58,8 +58,6 @@ info = [
 	{'coin_short_name': 'VIBE', 'coin_full_name': 'VIBE', 'repo_name': 'amack2u/VibeHub'},
 	{'coin_short_name': 'XSN', 'coin_full_name': 'Stakenet', 'repo_name': 'X9Developers/XSN'},
 	{'coin_short_name': 'ZOI', 'coin_full_name': 'Zoin', 'repo_name': 'zoinofficial/zoin'},
-	{'coin_short_name': 'PURA', 'coin_full_name': 'Pura', 'repo_name': 'PURAcore/'},
-	{'coin_short_name': 'QLC', 'coin_full_name': 'QLINK', 'repo_name': 'qlinkdev/'},
 	{'coin_short_name': 'FAIR', 'coin_full_name': 'FairCoin', 'repo_name': 'FairCoinTeam/fair-coin'},
 	{'coin_short_name': 'UNO', 'coin_full_name': 'Unobtanium', 'repo_name': 'unobtanium-official/Unobtanium'},
 	{'coin_short_name': 'AEON', 'coin_full_name': 'Aeon', 'repo_name': 'aeonix/aeon'},
@@ -249,19 +247,3 @@ info = [
 	{'coin_short_name': 'ADA', 'coin_full_name': 'Cardano', 'repo_name': 'input-output-hk/cardano-sl'},
 	{'coin_short_name': 'OMG', 'coin_full_name': 'Omisego', 'repo_name': 'omise/omise-go'}
 ]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

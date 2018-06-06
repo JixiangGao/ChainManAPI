@@ -15,7 +15,7 @@ def save_ticker_to_file():
 	start = 1
 	data = {}
 	try:
-		for start in range(1, 1000, 100):
+		for start in range(1, 1500, 100):
 			re_url = url + 'start=' + str(start)
 			rank_data = requests.get(re_url).json()['data']
 			data.update(rank_data)
