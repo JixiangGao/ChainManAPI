@@ -387,6 +387,7 @@ class sql(object):
 
         if 'openid' in result:
             openid = result['openid']
+            # print (openid)
 
             urlStr2 = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=" + accessToken + "&openid=" + openid
             result2 = requests.get(url=urlStr2).json()
@@ -405,10 +406,11 @@ class sql(object):
                 if cursor.rowcount > 0:
                     record = cursor.fetchone()
                     if record[0]:
-                        if record[1] == nickname:
-                            return {"code": 1000, "success": True, "message": "数据库存在该用户，无需更新，登录成功", "data": openid}
-                        else:
-                            sql = "UPDATE user_info SET nickname = '%s' WHERE user_id = '%s'" % (nickname, openid)
+                        # if record[1] == nickname:
+                        #     return {"code": 1000, "success": True, "message": "数据库存在该用户，无需更新，登录成功", "data": openid}
+                        # else:
+                        #     sql = "UPDATE user_info SET nickname = '%s' WHERE user_id = '%s'" % (nickname, openid)
+                        sql = "UPDATE user_info SET nickname = '%s' WHERE user_id = '%s'" % (nickname, openid)
                 cursor.close()
 
                 cursor = self.db.cursor()
@@ -417,7 +419,9 @@ class sql(object):
                 cursor.close()
             except BaseException as e:
                 print(e)
+            # print({"code": 1000, "success": True, "message": "数据库更新成功， 登录成功", "data": {'openid': openid}})
             return {"code": 1000, "success": True, "message": "数据库更新成功， 登录成功", "data": {'openid': openid}}
+
         else:
             return {"code": 2023, "success": False, "message": "获取openid错误", "data": result}
 
@@ -638,6 +642,22 @@ class sql(object):
             return data
         except BaseException as e:
             return {}
+
+    def get_coin_detail(self, params):
+        if 'id' not in params:
+            return {"code": 2026, "success": False, "message": 'need param of id', "data": None}
+        id = params['id']
+        sql = "call proc_coin_detail(%d)" % int(id)
+        try:
+            cursor = self.db.cursor()
+            cursor.execute(sql)
+            record = cursor.fetchone()
+            cursor.close()
+            return {"code": 1000, "success": True, "message": "获取成功", "data": str(record)}
+        except Exception as e:
+            print (e)
+            return {"code": 2027, "success": False, "message": 'error', "data": None}
+
 
 '''
     def get_ticker(self):

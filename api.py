@@ -102,6 +102,13 @@ def coinmarketcap(url):
     mysql.db_close()
     return jsonify(result)
 
+@app.route('/get_coin_detail')
+def get_coin_detail():
+    mysql = sql.sql()
+    result = mysql.get_coin_detail(request.args)
+    mysql.db_close()
+    return jsonify(result)
+
 
 
 if __name__ == '__main__':

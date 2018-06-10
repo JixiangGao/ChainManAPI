@@ -6,6 +6,9 @@ import time
 import datetime
 import traceback
 
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
+
 
 class GetInfo(object):
     def __init__(self):
@@ -20,27 +23,31 @@ class GetInfo(object):
 
     def get_commits_info(self):
         for coin in self.coins_info:
+            try:
 
-            #####
-            time_now = time.strftime('%Y-%m-%d %H:%M:%S',
-                                     time.localtime(time.time()))
-            print(time_now, coin["coin_full_name"])
+                #####
+                time_now = time.strftime('%Y-%m-%d %H:%M:%S',
+                                         time.localtime(time.time()))
+                print(time_now, coin["coin_full_name"])
 
-            info = self.g.get_repo(coin["repo_name"])
-            commits = info.get_commits()
-            # count = 0
-            for commit in commits:
-                # count = count + 1
-                commit_time = commit.commit.committer.date
-                time_2018_1_1 = datetime.datetime.strptime(
-                    '2017-11-01 00:00:00', '%Y-%m-%d %H:%M:%S')
-                if commit_time < time_2018_1_1:
-                    break
-                result = self.is_existed(commit)
-                if not result:
-                    continue
+                info = self.g.get_repo(coin["repo_name"])
+                commits = info.get_commits()
+                # count = 0
+                for commit in commits:
+                    # count = count + 1
+                    commit_time = commit.commit.committer.date
+                    time_2018_1_1 = datetime.datetime.strptime(
+                        '2017-11-01 00:00:00', '%Y-%m-%d %H:%M:%S')
+                    if commit_time < time_2018_1_1:
+                        break
+                    result = self.is_existed(commit)
+                    if not result:
+                        continue
 
-                self.insert_into_db(coin, commit)
+                    self.insert_into_db(coin, commit)
+            except Exception as e:
+                print(e)
+                continue
 
     def is_existed(self, commit):
         sha = commit.sha
@@ -139,7 +146,7 @@ while True:
         traceback.print_exc()
     finally:
         # time.sleep(5)
-        for i in range(10):
+        for i in range(0):
             ######
             time_now = time.strftime('%Y-%m-%d %H:%M:%S',
                                      time.localtime(time.time()))
