@@ -406,11 +406,11 @@ class sql(object):
                 if cursor.rowcount > 0:
                     record = cursor.fetchone()
                     if record[0]:
-                        # if record[1] == nickname:
-                        #     return {"code": 1000, "success": True, "message": "数据库存在该用户，无需更新，登录成功", "data": openid}
-                        # else:
-                        #     sql = "UPDATE user_info SET nickname = '%s' WHERE user_id = '%s'" % (nickname, openid)
-                        sql = "UPDATE user_info SET nickname = '%s' WHERE user_id = '%s'" % (nickname, openid)
+                        if record[1] == nickname:
+                            return {"code": 1000, "success": True, "message": "数据库存在该用户，无需更新，登录成功", "data": openid}
+                        else:
+                            sql = "UPDATE user_info SET nickname = '%s' WHERE user_id = '%s'" % (nickname, openid)
+                        # sql = "UPDATE user_info SET nickname = '%s' WHERE user_id = '%s'" % (nickname, openid)
                 cursor.close()
 
                 cursor = self.db.cursor()
@@ -419,7 +419,6 @@ class sql(object):
                 cursor.close()
             except BaseException as e:
                 print(e)
-            # print({"code": 1000, "success": True, "message": "数据库更新成功， 登录成功", "data": {'openid': openid}})
             return {"code": 1000, "success": True, "message": "数据库更新成功， 登录成功", "data": {'openid': openid}}
 
         else:
@@ -657,6 +656,62 @@ class sql(object):
         except Exception as e:
             print (e)
             return {"code": 2027, "success": False, "message": 'error', "data": None}
+
+
+    def get_coin_sites(self, params):
+        if 'id'not in params:
+            return {"code": 2028, "success": False, "message": 'need param of id', "data": None}
+        id = params['id']
+        sql = "SELECT coin_info.id, coin_info.full_name, site_name, site_url \
+              from coin_site, coin_info \
+              WHERE coin_info.id='%s' and coin_site.full_name=(SELECT full_name from coin_info WHERE id='%s')" % (id, id)
+        try:
+            cursor = self.db.cursor()
+            cursor.execute(sql)
+            record = cursor.fetchall()
+            cursor.close()
+            return {"code": 1000, "success": True, "message": "获取成功", "data": list(record)}
+        except Exception as e:
+            print (e)
+            return {"code": 2029, "success": False, "message": 'error', "data": None}
+
+
+    def get_login_log(self, params):
+        if 'id' not in params:
+            return {"code": 2030, "success": False, "message": 'need param of id', "data": None}
+        id = params['id']
+        sql = "select time from login_log where user_id='%s'" % id
+        try:
+            cursor = self.db.cursor()
+            cursor.execute(sql)
+            record = cursor.fetchall()
+            cursor.close()
+            return {"code": 1000, "success": True, "message": "获取成功", "data": list(record)}
+        except Exception as e:
+            print (e)
+            return {"code": 2031, "success": False, "message": 'error', "data": None}
+
+    def get_user_coins_history(self, params):
+        if 'id' not in params:
+            return {"code": 2032, "success": False, "message": 'need param of id', "data": None}
+        id = params['id']
+        sql_insert = "select coin, action_time from user_coins_history where user_id='%s' and action='%s'" % (id, 'insert')
+        sql_delete = "select coin, action_time from user_coins_history where user_id='%s' and action='%s'" % (id, 'delete')
+
+        try:
+            cursor = self.db.cursor()
+            cursor.execute(sql_insert)
+            record_insert = cursor.fetchall()
+            cursor.execute(sql_delete)
+            record_delete = cursor.fetchall()
+            result = {'insert': list(record_insert), 'delete': list(record_delete)}
+            cursor.close()
+            return {"code": 1000, "success": True, "message": "获取成功", "data": result}
+        except Exception as e:
+            print (e)
+            return {"code": 2033, "success": False, "message": 'error', "data": None}
+
+
 
 
 '''

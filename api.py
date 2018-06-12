@@ -109,6 +109,26 @@ def get_coin_detail():
     mysql.db_close()
     return jsonify(result)
 
+@app.route('/get_coin_sites')
+def get_coin_sites():
+    mysql = sql.sql()
+    result = mysql.get_coin_sites(request.args)
+    mysql.db_close()
+    return jsonify(result)
+
+@app.route('/get_login_log')
+def get_login_log():
+    mysql = sql.sql()
+    result = mysql.get_login_log(request.args)
+    mysql.db_close()
+    return jsonify(result)
+
+@app.route('/get_user_coins_history')
+def get_user_coins_history():
+    mysql = sql.sql()
+    result = mysql.get_user_coins_history(request.args)
+    mysql.db_close()
+    return jsonify(result)
 
 
 if __name__ == '__main__':
