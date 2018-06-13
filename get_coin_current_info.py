@@ -65,10 +65,10 @@ while True:
         traceback.print_exc()
     finally:
         # time.sleep(5)
-        for i in range(60):
+        for i in range(60*24):
             ######
             time_now = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-            print(time_now, "remain %dm" % (60 - i))
+            print(time_now, "remain %dm" % (60*24 - i))
             time.sleep(60)
 
 
